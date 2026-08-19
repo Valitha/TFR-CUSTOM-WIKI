@@ -18,6 +18,7 @@
     </div>
     <div class="app-actions">
       <button id="soundToggle" class="ui-btn" type="button">Sound: on</button>
+      <button id="musicToggle" class="ui-btn" type="button">Music: off</button>
       <button id="newProjectBtn" class="ui-btn" type="button">New</button>
       <button id="importBtn" class="ui-btn" type="button">Import</button>
       <button id="exportBtn" class="ui-btn primary" type="button">Export HTML</button>
@@ -182,6 +183,7 @@
     </div>
   </div>
 
+  <audio id="backgroundMusic" src="./assets/Crossing_The_Styx.mp3" loop preload="auto" autoplay muted></audio>
   <div id="bootError" class="boot-error" hidden></div>
   <script src="./js/app.bundle.js"></script>
 </body>

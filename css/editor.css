@@ -98,3 +98,44 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
     grid-template-columns:minmax(130px,.9fr) 105px minmax(170px,1.35fr) auto;
   }
 }
+
+
+/* V11 — compact rich formatting for infobox values/items. */
+.infobox-rich-control,.item-rich-control{min-width:0}
+.infobox-mini-toolbar{
+  display:flex;
+  gap:4px;
+  align-items:center;
+  margin-bottom:4px;
+}
+.infobox-mini-toolbar button{
+  border:1px solid var(--line);
+  background:#0c080e;
+  color:var(--text);
+  border-radius:5px;
+  padding:3px 7px;
+  min-height:25px;
+  font-size:11px;
+}
+.infobox-rich-editor,.item-rich-editor{
+  min-width:0;
+  min-height:40px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:#0c080e;
+  color:var(--text);
+  padding:8px 9px;
+  line-height:1.35;
+  outline:none;
+  overflow-wrap:anywhere;
+}
+.infobox-rich-editor:focus,.item-rich-editor:focus{border-color:var(--purple)}
+.infobox-rich-editor:empty:before,.item-rich-editor:empty:before{
+  content:attr(data-placeholder);
+  color:#756b79;
+}
+.infobox-rich-editor .purple-text,.item-rich-editor .purple-text,.rich-editor .purple-text{color:#B75DCC}
+.list-item .item-rich-control{width:100%;min-width:0}
+@media(min-width:861px){
+  .list-item .item-rich-control{grid-column:2}
+}
