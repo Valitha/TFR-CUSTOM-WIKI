@@ -1,5 +1,6 @@
 (() => {
   const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  if (standalone) document.documentElement.classList.add('pwa-standalone');
   const splash = document.getElementById('pwaSplash');
   const status = document.getElementById('pwaStatus');
 

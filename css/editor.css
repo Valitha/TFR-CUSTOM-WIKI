@@ -1049,12 +1049,11 @@ body.mobile-pages-open{overflow:hidden}
 .pwa-status{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));z-index:9999;transform:translateX(-50%);max-width:min(92vw,520px);border:1px solid #7F4D9F;background:#100a12;color:#fff;padding:8px 12px;font-size:13px;box-shadow:0 8px 24px #0009}
 @media(max-width:760px){.pwa-status{font-size:12px;bottom:max(10px,env(safe-area-inset-bottom))}.pwa-splash img{width:min(58vw,220px)}}
 
-
-/* V28 — iOS standalone/PWA safe-area header fix.
-   Keep all editor controls below the status bar / Dynamic Island while
-   preserving the existing desktop layout. */
+/* V29 — iOS standalone/PWA safe areas.
+   These offsets are deliberately scoped to installed standalone mode so
+   ordinary Safari/mobile web keeps its existing layout. */
 @media(max-width:760px){
-  .app-header{
+  html.pwa-standalone .app-header{
     box-sizing:border-box!important;
     height:calc(56px + env(safe-area-inset-top))!important;
     min-height:calc(56px + env(safe-area-inset-top))!important;
@@ -1063,36 +1062,44 @@ body.mobile-pages-open{overflow:hidden}
     padding-right:max(10px,env(safe-area-inset-right))!important;
     top:0!important;
   }
-  .brand{
-    min-width:0!important;
-    overflow:hidden!important;
-  }
-  .brand strong{
-    min-width:0!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-  .mobile-header-actions{
-    flex:0 0 auto!important;
-    min-width:0!important;
-  }
-  .mobile-editor-nav{
-    top:calc(56px + env(safe-area-inset-top))!important;
-  }
-  .app-layout{
-    min-height:calc(100dvh - 56px - env(safe-area-inset-top))!important;
-  }
-  body:not(.preview-clean) .page-sidebar{
+  html.pwa-standalone .brand{min-width:0!important;overflow:hidden!important}
+  html.pwa-standalone .brand strong{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  html.pwa-standalone .mobile-header-actions{flex:0 0 auto!important;min-width:0!important}
+  html.pwa-standalone .mobile-editor-nav{top:calc(56px + env(safe-area-inset-top))!important}
+  html.pwa-standalone .app-layout{min-height:calc(100dvh - 56px - env(safe-area-inset-top))!important}
+  html.pwa-standalone body:not(.preview-clean) .page-sidebar{
     padding-top:calc(env(safe-area-inset-top) + 14px)!important;
     padding-left:max(14px,env(safe-area-inset-left))!important;
+    padding-right:max(14px,env(safe-area-inset-right))!important;
     padding-bottom:calc(env(safe-area-inset-bottom) + 14px)!important;
+  }
+
+  /* Full-screen mobile Preview hides the editor header, so give the preview
+     itself the safe-area inset instead of letting the iframe begin under the
+     iOS status bar / Dynamic Island. */
+  html.pwa-standalone body.mobile-preview-active .preview-pane{
+    box-sizing:border-box!important;
+    padding-top:env(safe-area-inset-top)!important;
+    padding-left:env(safe-area-inset-left)!important;
+    padding-right:env(safe-area-inset-right)!important;
+    min-height:100dvh!important;
+  }
+  html.pwa-standalone body.mobile-preview-active .preview-wrap,
+  html.pwa-standalone body.mobile-preview-active .preview-wrap.phone{
+    min-height:calc(100dvh - env(safe-area-inset-top))!important;
+  }
+  html.pwa-standalone body.mobile-preview-active .preview-wrap iframe{
+    min-height:calc(100dvh - env(safe-area-inset-top))!important;
+  }
+  html.pwa-standalone body.mobile-preview-active .mobile-return-edit{
+    top:calc(env(safe-area-inset-top) + 8px)!important;
+    right:max(8px,env(safe-area-inset-right))!important;
   }
 }
 
-/* Landscape iPhones can also have a left/right unsafe region. */
 @media(max-width:760px) and (orientation:landscape){
-  .editor-pane,
-  .mobile-editor-nav{
+  html.pwa-standalone .editor-pane,
+  html.pwa-standalone .mobile-editor-nav{
     padding-left:max(10px,env(safe-area-inset-left))!important;
     padding-right:max(10px,env(safe-area-inset-right))!important;
   }

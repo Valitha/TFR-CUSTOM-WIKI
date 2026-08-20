@@ -40,7 +40,7 @@
 .tfr-trait-list{margin:0;padding:0}
 .tfr-trait-entry{margin:0 0 7px}
 .tfr-trait-entry:last-child{margin-bottom:0}
-.tfr-trait-title{font-weight:700;text-align:center;margin:0 0 2px}
+.tfr-trait-title{display:block;width:100%;font-weight:700;text-align:center;margin:0 0 2px}
 .tfr-trait-bonus-list{margin:.05em 0 .15em 1.45em;padding:0}
 .tfr-trait-bonus-list li{padding:1px 0}
 .tfr-trait-bonus-icon{margin-right:4px!important}
