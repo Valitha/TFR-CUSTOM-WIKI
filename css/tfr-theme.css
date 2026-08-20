@@ -34,3 +34,13 @@
   .tfr-route-paths{grid-template-columns:1fr;gap:7px}
   .tfr-route-quote{font-size:.9em}
 }
+
+
+/* V25 — trait bonuses have their own icons; flags sit inside the frame window. */
+.tfr-trait-list .tfr-trait-text{vertical-align:middle}
+.tfr-trait-bonuses{display:inline-flex;flex-wrap:wrap;align-items:center;gap:3px 7px;margin-left:6px;vertical-align:middle}
+.tfr-trait-bonus{display:inline-flex;align-items:center;white-space:nowrap}
+.tfr-trait-bonus .tfr-ib-icon{margin-right:2px}
+.tfr-route-flag{overflow:visible}
+.tfr-route-flag-image{inset:4px!important;width:38px!important;height:21px!important;object-fit:fill!important;z-index:1}
+.tfr-route-flag-frame{inset:0!important;width:46px!important;height:29px!important;object-fit:fill!important;z-index:2}

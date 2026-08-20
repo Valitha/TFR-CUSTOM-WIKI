@@ -943,3 +943,29 @@ body.mobile-pages-open{overflow:hidden}
   .icon-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .library-icon span{font-size:9px}
 }
+
+
+/* V25 — a trait is text; each trait can have multiple icon/value bonuses. */
+.trait-item-v25{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:7px 9px;padding:10px 0;border-bottom:1px solid #472b54}
+.trait-item-v25 .trait-text-control{grid-column:1;min-width:0}
+.trait-item-v25>.trait-remove{grid-column:2;grid-row:1;width:40px!important;height:40px!important;min-width:40px!important;padding:0!important}
+.trait-bonuses-editor{grid-column:1 / -1;display:grid;gap:6px;margin-left:0}
+.trait-bonus-editor{display:grid;grid-template-columns:42px minmax(92px,150px) 80px 40px;gap:7px;align-items:center}
+.trait-bonus-icon-picker{position:relative;width:42px;height:42px;display:grid;place-items:center;border:1px solid #684078;background:#0b070d;color:#ddd;padding:2px;overflow:hidden}
+.trait-bonus-icon-picker img{width:100%;height:100%;object-fit:contain}
+.trait-bonus-icon-picker .image-picker-placeholder{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5}
+.trait-bonus-icon-picker .image-picker-plus{position:absolute;right:0;bottom:0;width:17px;height:17px;display:grid;place-items:center;border:1px solid #7F4D9F;background:#100a12;color:#fff;font-size:13px;line-height:1}
+.trait-bonus-editor .stat-input{width:100%!important;min-width:92px!important}
+.trait-bonus-editor .stat-color{width:80px!important;min-width:80px!important}
+.trait-bonus-editor .bonus-remove{width:40px!important;height:40px!important;min-width:40px!important;padding:0!important}
+.add-trait-bonus{justify-self:start}
+@media(max-width:760px){
+ .trait-item-v25{grid-template-columns:minmax(0,1fr) 40px!important}
+ .trait-bonus-editor{grid-template-columns:42px minmax(108px,1fr) 74px 40px!important}
+ .trait-bonus-editor .stat-color{width:74px!important;min-width:74px!important}
+}
+@media(max-width:390px){
+ .trait-bonus-editor{grid-template-columns:42px minmax(90px,1fr) 68px 36px!important;gap:5px}
+ .trait-bonus-editor .stat-color{width:68px!important;min-width:68px!important}
+ .trait-bonus-editor .bonus-remove{width:36px!important;height:40px!important;min-width:36px!important}
+}

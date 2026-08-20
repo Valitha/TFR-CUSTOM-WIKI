@@ -1,11 +1,12 @@
 export const FORMAT='tfr-lore-project';
-export const VERSION=4;
+export const VERSION=5;
 export const IMAGE_OPT_VERSION=1;
 export const uid=(p='id')=>`${p}-${crypto.randomUUID?.()||Date.now()+'-'+Math.random().toString(16).slice(2)}`;
 export const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const textRow=(label='Field',value='',opts={})=>({id:uid('row'),label,type:'text',value,icon:opts.icon||'',valueColor:opts.valueColor||'inherit'});
 export const listItem=()=>({id:uid('item'),icon:'',text:''});
-export const traitItem=()=>({id:uid('item'),icon:'',text:'',stat:'',statColor:'green'});
+export const traitBonus=()=>({id:uid('bonus'),icon:'',stat:'',statColor:'green'});
+export const traitItem=()=>({id:uid('item'),text:'',bonuses:[traitBonus()]});
 export const listRow=(label='Field')=>({id:uid('row'),label,type:'list',icon:'',items:[listItem()]});
 export const traitRow=(label='Traits')=>({id:uid('row'),label,type:'trait',icon:'',items:[traitItem()]});
 export const group=(title='Basic Information',rows=[textRow()])=>({id:uid('group'),title,rows});
@@ -33,7 +34,8 @@ export function makePage(type='character'){
 }
 export function makeProject(){const p=makePage('character');return {format:FORMAT,version:VERSION,imageOptimizationVersion:IMAGE_OPT_VERSION,activePageId:p.id,title:'Untitled Lore Project',settings:{showEditLinks:true},pages:[p],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}}
 
-function normalizeItem(i,isTrait){i.id||=uid('item');i.icon||='';i.text??='';if(isTrait){i.stat??='';i.statColor=['green','red'].includes(i.statColor)?i.statColor:(i.statColor==='inherit'?'green':'green')}return i}
+function normalizeTraitBonus(b){b=b&&typeof b==='object'?b:{};b.id||=uid('bonus');b.icon||='';b.stat??=b.value??='';b.statColor=['green','red'].includes(b.statColor)?b.statColor:'green';delete b.value;return b}
+function normalizeItem(i,isTrait){i=i&&typeof i==='object'?i:{};i.id||=uid('item');i.text??='';if(isTrait){let bonuses=Array.isArray(i.bonuses)?i.bonuses:null;if(!bonuses){bonuses=[];if(i.icon||i.stat)bonuses.push({id:uid('bonus'),icon:i.icon||'',stat:i.stat||'',statColor:i.statColor||'green'})}i.bonuses=bonuses.map(normalizeTraitBonus);if(!i.bonuses.length)i.bonuses=[traitBonus()];delete i.icon;delete i.stat;delete i.statColor}else{i.icon||=''}return i}
 function normalizeRow(r){
  r.id||=uid('row');r.label??='Field';r.icon||='';
  const oldType=r.type;
