@@ -105,6 +105,27 @@
               </select>
             </label>
 
+            <div id="countryPathsEditor" class="country-paths-editor" hidden>
+              <div class="country-paths-head">
+                <div><small>COUNTRY</small><strong>Starting country &amp; paths</strong></div>
+                <label class="toggle-row"><input id="countryPathsEnabled" type="checkbox"> Show above article</label>
+              </div>
+              <div id="countryPathsFields">
+                <div class="country-root-editor">
+                  <span class="section-label">Starting country</span>
+                  <div class="country-route-editor-row">
+                    <label class="route-flag-picker" title="Choose flag"><span id="countryRootFlagPreview"></span><span class="image-picker-plus">+</span><input id="countryRootFlagFile" type="file" accept="image/*"></label>
+                    <input id="countryRootTitle" type="text" placeholder="Starting country name">
+                    <select id="countryRootPage" aria-label="Link starting country to page"></select>
+                    <button id="countryRootFlagClear" class="ui-btn danger subtle compact-remove" type="button" aria-label="Remove starting flag">×</button>
+                  </div>
+                </div>
+                <label class="field"><span>Optional quote</span><input id="countryPathsQuote" type="text" placeholder="That which does not kill us makes us stronger"></label>
+                <div class="country-paths-list-head"><span class="section-label">Paths</span><button id="addCountryPathBtn" class="ui-btn subtle" type="button">+ Path</button></div>
+                <div id="countryPathsList" class="country-paths-list"></div>
+              </div>
+            </div>
+
             <div class="field">
               <span>Lead image</span>
               <div class="media-line">
@@ -228,6 +249,18 @@
     </div>
   </div>
 
+  <div id="iconLibraryModal" class="modal" hidden>
+    <div class="modal-card icon-library-modal" role="dialog" aria-modal="true" aria-labelledby="iconLibraryHeading">
+      <div class="icon-library-head"><h2 id="iconLibraryHeading">Choose icon</h2><button id="closeIconLibrary" class="ui-btn danger subtle compact-remove" type="button" aria-label="Close icon library">×</button></div>
+      <div class="icon-library-filters">
+        <select id="iconLibraryCategory" aria-label="Icon category"><option value="all">All icons</option><option value="general">General</option><option value="ideology">Ideology</option><option value="factions">Factions</option><option value="traits">Traits</option></select>
+        <input id="iconLibrarySearch" type="search" placeholder="Search icons" aria-label="Search icons">
+      </div>
+      <div id="iconLibraryGrid" class="icon-library-grid"></div>
+      <div class="icon-library-actions"><button id="uploadOwnIcon" class="ui-btn subtle" type="button">Upload image</button><button id="removeChosenIcon" class="ui-btn danger subtle" type="button">No icon</button></div>
+    </div>
+  </div>
+  <input id="iconLibraryUpload" class="offscreen-file-input" type="file" accept="image/*">
   <input id="importFile" class="offscreen-file-input" type="file" accept=".html,text/html">
   <audio id="backgroundMusic" src="./assets/Crossing_The_Styx.mp3" loop preload="auto" muted></audio>
   <div id="bootError" class="boot-error" hidden></div>
