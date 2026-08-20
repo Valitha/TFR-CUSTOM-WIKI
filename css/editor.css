@@ -1039,3 +1039,12 @@ body.mobile-pages-open{overflow:hidden}
   .trait-bonus-value-controls{grid-template-columns:minmax(96px,1fr) 74px}
   .trait-bonus-value-controls .stat-color{width:74px!important;min-width:74px!important;max-width:74px!important}
 }
+
+
+/* PWA shell */
+.pwa-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#080309;opacity:1;transition:opacity .18s linear;pointer-events:none}
+.pwa-splash[hidden]{display:none}
+.pwa-splash.is-hiding{opacity:0}
+.pwa-splash img{width:min(52vw,230px);height:auto;display:block}
+.pwa-status{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));z-index:9999;transform:translateX(-50%);max-width:min(92vw,520px);border:1px solid #7F4D9F;background:#100a12;color:#fff;padding:8px 12px;font-size:13px;box-shadow:0 8px 24px #0009}
+@media(max-width:760px){.pwa-status{font-size:12px;bottom:max(10px,env(safe-area-inset-bottom))}.pwa-splash img{width:min(58vw,220px)}}

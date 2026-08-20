@@ -4,6 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080309">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TFR Wiki">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/app-icon-180.png">
   <title>The Fire Rises Wiki Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
@@ -11,6 +17,12 @@
   <link rel="stylesheet" href="./css/editor.css">
 </head>
 <body>
+  <div id="pwaSplash" class="pwa-splash" hidden aria-hidden="true"><img src="./assets/tfr-logo.gif" alt=""></div>
+  <script>
+    if ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true) {
+      document.getElementById('pwaSplash').hidden = false;
+    }
+  </script>
 <header class="app-header" id="appHeader">
     <div class="brand">
       <img src="./assets/tfr-logo.gif" alt="" class="brand-logo">
@@ -264,6 +276,8 @@
   <input id="importFile" class="offscreen-file-input" type="file" accept=".html,text/html">
   <audio id="backgroundMusic" src="./assets/Crossing_The_Styx.mp3" loop preload="auto" muted></audio>
   <div id="bootError" class="boot-error" hidden></div>
+  <div id="pwaStatus" class="pwa-status" hidden role="status" aria-live="polite"></div>
   <script src="./js/app.bundle.js"></script>
+  <script src="./js/pwa.js"></script>
 </body>
 </html>
