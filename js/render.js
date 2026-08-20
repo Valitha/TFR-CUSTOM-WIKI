@@ -28,7 +28,8 @@ function renderBody(project,page){return `${renderInfobox(page)}${renderLead(pag
 export function pageMarkup(project,page,assets){return `<div class="tfr-reader text-standard width-standard" data-page-root="${esc(page.id)}">${renderHeader(project,assets)}<div class="tfr-layout"><aside class="tfr-side tfr-toc"><div class="tfr-side-inner"><div class="tfr-side-heading"><strong>Contents</strong><button data-toc-hide>hide</button></div>${renderToc(page)}</div></aside><main class="tfr-main" id="article-top"><div class="tfr-title-row"><div class="tfr-toc-inline-wrap"><button class="tfr-toc-inline" data-toc-menu-toggle aria-label="Contents" aria-expanded="false">☷</button><div class="tfr-toc-popover" hidden>${renderToc(page)}</div></div><h1>${esc(page.title)}</h1></div><div class="tfr-tabs"><div class="tfr-tab-group"><a class="tfr-tab active" href="#">Page</a><a class="tfr-tab discussion" href="#" data-edit-page>Discussion</a></div><div class="tfr-tab-group right"><a class="tfr-tab active desktop-only" href="#">Read</a><a class="tfr-tab desktop-only" href="#" data-edit-page>Edit</a><a class="tfr-tab desktop-only" href="#" data-edit-page>Edit source</a><a class="tfr-tab desktop-only" href="#">View history</a><details class="tfr-tools"><summary>Tools</summary><div class="tfr-tools-menu"><button data-tool="toc">Contents</button><button data-tool="appearance">Appearance</button><button data-tool="sound">Sound: on</button></div></details></div></div><article class="tfr-article">${renderBody(project,page)}</article></main><aside class="tfr-side tfr-appearance">${renderAppearance()}</aside></div></div>`}
 
 function runtime(project,mode,sounds){
-  const data=JSON.stringify(project).replace(/</g,'\\u003c');
+  const runtimeProject={pages:project.pages.map(p=>({id:p.id,title:p.title,introHtml:p.introHtml||'',sections:(p.sections||[]).map(s=>({title:s.title||'',html:s.html||''}))}))};
+  const data=JSON.stringify(runtimeProject).replace(/</g,'\\u003c');
   const snd=JSON.stringify(sounds).replace(/</g,'\\u003c');
   return `<script>(function(){
 const PROJECT=${data},MODE=${JSON.stringify(mode)},SOUNDS=${snd};
@@ -62,6 +63,17 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{const root=e.target.closest('.tfr-reader')||activeRoot();if(!root)return;if(e.target.name==='text-size'){root.classList.remove('text-small','text-standard','text-large');root.classList.add('text-'+e.target.value)}if(e.target.name==='page-width'){root.classList.remove('width-standard','width-wide');root.classList.add('width-'+e.target.value)}});
 document.querySelectorAll('[data-tool="sound"]').forEach(x=>x.textContent='Sound: '+(muted?'off':'on'));
+if(MODE==='preview'){
+ let heightQueued=false;
+ const reportHeight=()=>{heightQueued=false;const h=Math.max(document.documentElement.scrollHeight,document.body?.scrollHeight||0);parent.postMessage({type:'preview-height',height:h},'*')};
+ const queueHeight=()=>{if(heightQueued)return;heightQueued=true;requestAnimationFrame(reportHeight)};
+ addEventListener('load',queueHeight,{once:true});
+ addEventListener('resize',queueHeight);
+ if(window.ResizeObserver)new ResizeObserver(queueHeight).observe(document.documentElement);
+ document.fonts?.ready?.then(queueHeight).catch(()=>{});
+ document.querySelectorAll('img').forEach(img=>{if(!img.complete)img.addEventListener('load',queueHeight,{once:true})});
+ queueHeight();
+}
 if(MODE==='export'){const id=new URLSearchParams(location.hash.slice(1)).get('page');if(id&&PROJECT.pages.some(p=>p.id===id))showPage(id)}
 })();<\/script>`
 }

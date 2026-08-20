@@ -26,7 +26,7 @@ export function sanitize(html){
       for(const a of [...c.attributes]){
         if(c.tagName==='A'&&['href','title'].includes(a.name))continue;
         if((c.tagName==='SPAN'||c.tagName==='U')&&a.name==='class'&&a.value==='purple-text')continue;
-        if(c.tagName==='IMG'&&['src','alt','class'].includes(a.name))continue;
+        if(c.tagName==='IMG'&&['src','alt','class','data-tfr-img-opt'].includes(a.name))continue;
         c.removeAttribute(a.name);
       }
       if(c.tagName==='A'){
