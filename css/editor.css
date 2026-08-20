@@ -139,3 +139,603 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
 @media(min-width:861px){
   .list-item .item-rich-control{grid-column:2}
 }
+
+/* V12 — phone editor layout. Desktop remains unchanged. */
+.mobile-header-actions,.mobile-editor-nav,.mobile-drawer-head,.mobile-sidebar-actions,.mobile-drawer-backdrop,.mobile-return-edit{display:none}
+
+@media(max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .app-header{height:56px;padding:0 10px;gap:8px}
+  .brand{min-width:0}.brand strong{display:none}.brand-logo{width:38px;height:38px}
+  .app-actions{display:none!important}
+  .mobile-header-actions{display:flex;align-items:center;gap:7px;margin-left:auto}
+  .mobile-header-actions .ui-btn{min-height:40px;padding:7px 12px;font-size:14px}
+  .mobile-header-actions .mobile-plus{width:42px;min-width:42px;padding:0;font-size:25px;line-height:1}
+
+  .app-layout{display:block;min-height:calc(100dvh - 56px)}
+  .workspace{width:100%;min-width:0}
+  .workspace-tabs{display:none!important}
+  .mobile-editor-nav{display:block;position:sticky;top:56px;z-index:35;padding:8px 10px;border-bottom:1px solid var(--line);background:rgba(11,7,13,.98)}
+  .mobile-editor-nav label{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px}
+  .mobile-editor-nav span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .mobile-editor-nav select{min-height:42px;padding:8px 10px}
+
+  .page-sidebar{display:flex;position:fixed;top:56px;left:0;bottom:0;width:min(88vw,360px);height:auto;z-index:2200;border-right:1px solid var(--purple);border-bottom:0;padding:14px;background:#110c13;box-shadow:12px 0 32px #000b;transform:translateX(-105%);transition:transform .18s ease;overflow-y:auto}
+  body.mobile-pages-open .page-sidebar{transform:translateX(0)}
+  .mobile-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .mobile-drawer-head strong{font-family:'VCROSDMONO','VCR OSD Mono',monospace;font-weight:400}
+  .mobile-drawer-head .ui-btn{width:40px;min-width:40px;height:40px;padding:0;font-size:22px}
+  .mobile-sidebar-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+  .mobile-sidebar-actions .ui-btn{min-height:42px}
+  .mobile-sidebar-actions .primary{grid-column:1/-1}
+  .mobile-drawer-backdrop{display:none;position:fixed;inset:56px 0 0;z-index:2100;border:0;background:rgba(0,0,0,.58);padding:0}
+  body.mobile-pages-open .mobile-drawer-backdrop{display:block}
+  body.mobile-pages-open{overflow:hidden}
+  .page-row{min-height:46px}.page-open,.page-delete{min-height:44px}.page-delete{font-size:20px}
+  #addPageBtn{min-height:44px}
+
+  .editor-pane{padding:10px 8px 28px}
+  .editor-grid{display:block;max-width:none;margin:0}
+  .editor-card[data-mobile-panel]{display:none}
+  body[data-mobile-panel="article"] .editor-card[data-mobile-panel="article"],
+  body[data-mobile-panel="infobox"] .editor-card[data-mobile-panel="infobox"],
+  body[data-mobile-panel="sections"] .editor-card[data-mobile-panel="sections"],
+  body[data-mobile-panel="categories"] .editor-card[data-mobile-panel="categories"]{display:block}
+  .editor-card{width:100%;padding:13px;border-radius:10px}
+  .editor-card.wide{grid-column:auto}
+  .card-title-row{flex-wrap:wrap;align-items:center}.card-title-row>.ui-btn{min-height:40px}
+  input,select,textarea{min-height:44px;font-size:16px}
+  .ui-btn,.file-btn{min-height:40px}
+  .rich-toolbar,.infobox-mini-toolbar{gap:6px}
+  .rich-toolbar button{min-height:38px;min-width:38px;padding:6px 9px}
+  .infobox-mini-toolbar button{min-height:34px;padding:5px 9px}
+  .rich-editor{min-height:150px;font-size:16px}
+  .infobox-rich-editor,.item-rich-editor{min-height:44px;font-size:16px}
+
+  .media-line{grid-template-columns:76px minmax(0,1fr);align-items:start}.image-preview{width:76px;height:76px}
+  .media-actions{align-items:stretch}.media-actions .file-btn,.media-actions .ui-btn{flex:1 1 120px}
+  .advanced-grid{grid-template-columns:1fr}
+  .media-card{padding:10px}.media-card-head{display:grid;grid-template-columns:minmax(0,1fr) 58px;align-items:center}.media-thumb{width:56px;height:56px}
+  .media-card-actions{display:grid;grid-template-columns:1fr 1fr}.media-card-actions>*{width:100%}
+
+  .group-card-head{display:grid;grid-template-columns:1fr;gap:8px}.group-card-head .remove-group{width:100%}
+  .row-editor{padding:10px}
+  .row-top{display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:8px;align-items:start}
+  .row-top .row-label{grid-column:1}.row-top .row-type{grid-column:2}.row-top .row-value{grid-column:1/-1}.row-top .row-remove{grid-column:1/-1;width:100%}
+  .list-items{padding-left:0!important;margin-top:10px}
+  .list-item{display:grid;grid-template-columns:42px minmax(0,1fr);gap:8px;align-items:start;border-top:1px solid rgba(76,49,85,.7);padding-top:9px}
+  .list-item-icon{grid-column:1;grid-row:1;width:40px;height:40px}
+  .list-item .item-rich-control{grid-column:2;grid-row:1;width:100%;min-width:0}
+  .list-item .stat-input{grid-column:1;grid-row:2;width:100%!important;min-width:0!important}
+  .list-item .stat-color{grid-column:2;grid-row:2;width:100%!important;min-width:0!important}
+  .list-item .item-remove{grid-column:1/-1;grid-row:3;width:100%!important;min-width:0!important;min-height:38px}
+  .list-item .file-btn{grid-column:1/-1;grid-row:4;width:100%;justify-self:stretch}
+
+  .section-card-head{display:grid;grid-template-columns:1fr 46px 46px;gap:7px;align-items:center}
+  .section-card-head .section-title{grid-column:1/-1}
+  .section-card-head .move-up{grid-column:2}.section-card-head .move-down{grid-column:3}
+  .section-card-head .sec-remove{grid-column:1;grid-row:2;width:100%}
+  .section-meta{display:grid;grid-template-columns:1fr;gap:7px}.section-meta select{width:100%;min-width:0}.section-meta .ui-btn{width:100%}
+  .section-image-row,.gallery-row{grid-template-columns:62px minmax(0,1fr);align-items:start}.section-image-row>.ui-btn,.gallery-row>.ui-btn{grid-column:1/-1;width:100%}
+  .two-col-settings{grid-template-columns:1fr}.toggle-row{padding:4px 0 0;white-space:normal;min-height:44px}
+
+  .preview-chrome-toggle{display:none!important}
+  body.mobile-preview-active{overflow:hidden}
+  body.mobile-preview-active .app-header,
+  body.mobile-preview-active .mobile-editor-nav,
+  body.mobile-preview-active .page-sidebar,
+  body.mobile-preview-active .mobile-drawer-backdrop,
+  body.mobile-preview-active .workspace-tabs{display:none!important}
+  body.mobile-preview-active .app-layout,body.mobile-preview-active .workspace{min-height:100dvh}
+  body.mobile-preview-active .preview-pane{display:block!important;position:fixed;inset:0;z-index:3000;padding:0;background:#080309}
+  body.mobile-preview-active .preview-toolbar{display:none!important}
+  body.mobile-preview-active .preview-wrap,body.mobile-preview-active .preview-wrap.phone{max-width:none!important;width:100%!important;height:100dvh;margin:0!important}
+  body.mobile-preview-active .preview-wrap iframe{width:100%!important;height:100dvh!important;min-height:100dvh!important;border:0!important;border-radius:0!important}
+  body.mobile-preview-active .mobile-return-edit{display:block;position:fixed;top:calc(env(safe-area-inset-top) + 8px);right:8px;z-index:3200;min-height:38px;border:1px solid var(--purple);border-radius:7px;background:rgba(8,3,9,.92);color:var(--text);padding:7px 10px;font-family:'Electrolize',sans-serif;font-size:12px;box-shadow:0 4px 14px #0008;touch-action:manipulation}
+}
+
+@media(max-width:390px){
+  .mobile-header-actions .ui-btn{padding-left:9px;padding-right:9px}
+  .editor-pane{padding-left:6px;padding-right:6px}
+  .editor-card{padding:11px}
+  .row-top{grid-template-columns:minmax(0,1fr) 108px}
+}
+.offscreen-file-input{position:fixed!important;left:-10000px!important;top:0!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+
+
+/* V13 — clearer infobox and portrait editing. This is intentionally scoped to
+   infobox media/list controls so the rest of the desktop/mobile editor is unchanged. */
+.compact-media-card{padding:10px}
+.compact-media-main{display:grid;grid-template-columns:52px minmax(0,1fr) 34px;gap:8px;align-items:center}
+.portrait-image-picker,.item-icon-picker{
+  position:relative;display:grid;place-items:center;overflow:hidden;cursor:pointer;
+  border:1px solid var(--line);background:#080509;border-radius:7px;color:var(--muted);
+}
+.portrait-image-picker{width:52px;height:52px}
+.item-icon-picker{width:42px;height:42px}
+.portrait-image-picker:hover,.item-icon-picker:hover{border-color:var(--purple)}
+.portrait-image-picker img,.item-icon-picker img{width:100%;height:100%;object-fit:contain}
+.portrait-image-picker input,.item-icon-picker input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.image-picker-placeholder{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.image-picker-plus{
+  position:absolute;right:2px;bottom:2px;display:grid;place-items:center;width:17px;height:17px;
+  border:1px solid var(--purple);border-radius:50%;background:#140d17;color:#fff;font:14px/1 'Electrolize',sans-serif;
+}
+.compact-media-main .tab-label{min-width:0;width:100%}
+.compact-remove{width:34px!important;min-width:34px!important;height:34px;min-height:34px!important;padding:0!important}
+.compact-media-advanced{margin:7px 0 0 60px}
+
+.infobox-rich-control,.item-rich-control{display:flex;flex-direction:column;gap:4px}
+.infobox-mini-toolbar{order:2;margin:0;gap:4px}
+.infobox-mini-toolbar button{min-height:25px!important;padding:3px 7px!important;font-size:11px!important}
+.infobox-rich-editor,.item-rich-editor{order:1}
+
+.list-items{gap:9px}
+.list-item{
+  display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;
+  gap:7px 9px!important;align-items:start!important;padding:8px 0!important;
+}
+.list-item .item-icon-picker{grid-column:1;grid-row:1}
+.list-item .item-rich-control{grid-column:2;grid-row:1;width:100%;min-width:0}
+.item-meta-controls{
+  grid-column:2;grid-row:2;display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:nowrap;
+}
+.item-meta-controls .stat-input{
+  width:98px!important;min-width:98px!important;max-width:98px!important;min-height:34px!important;padding:5px 7px!important;
+}
+.item-meta-controls .stat-color{
+  width:82px!important;min-width:82px!important;max-width:82px!important;min-height:34px!important;padding:5px 25px 5px 7px!important;
+}
+.item-meta-controls .item-remove{
+  width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;
+}
+
+@media(max-width:760px){
+  .compact-media-card{padding:9px}
+  .compact-media-main{grid-template-columns:50px minmax(0,1fr) 36px;gap:8px}
+  .portrait-image-picker{width:50px;height:50px}
+  .compact-media-advanced{margin-left:58px}
+
+  .list-item{
+    grid-template-columns:44px minmax(0,1fr)!important;
+    border-top:1px solid rgba(76,49,85,.7);padding-top:10px!important;
+  }
+  .item-icon-picker{width:44px;height:44px}
+  .item-meta-controls{grid-column:2!important;grid-row:2!important;gap:6px;flex-wrap:wrap}
+  .item-meta-controls .stat-input{width:104px!important;min-width:104px!important;max-width:104px!important}
+  .item-meta-controls .stat-color{width:84px!important;min-width:84px!important;max-width:84px!important}
+  .item-meta-controls .item-remove{width:36px!important;min-width:36px!important;max-width:36px!important}
+}
+
+@media(max-width:390px){
+  .compact-media-advanced{margin-left:0}
+  .item-meta-controls{grid-column:1/-1!important;margin-left:53px}
+  .item-meta-controls .stat-input{width:108px!important;min-width:108px!important;max-width:108px!important}
+}
+
+
+/* V14 — focused desktop editor + final infobox layout cleanup.
+   Desktop defaults to the same one-panel-at-a-time idea as mobile. The old
+   multi-panel grid is still available through Advanced editor. */
+.desktop-editor-nav{display:none}
+
+@media(min-width:761px){
+  .desktop-editor-nav{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    min-height:52px;padding:7px 18px;border-bottom:1px solid var(--line);
+    position:sticky;top:114px;z-index:29;background:rgba(11,7,13,.97)
+  }
+  .desktop-editor-nav label{display:flex;align-items:center;gap:9px;min-width:0}
+  .desktop-editor-nav label>span{font-size:10px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase}
+  .desktop-editor-nav select{width:220px;min-height:36px;padding:6px 9px}
+  .desktop-editor-nav #advancedEditorToggle{white-space:nowrap}
+
+  /* Simple desktop mode: one editor card, no artificial grid-row height. */
+  body:not(.desktop-advanced) .editor-grid{display:block;max-width:980px;margin:0 auto}
+  body:not(.desktop-advanced) .editor-card[data-mobile-panel]{display:none}
+  body:not(.desktop-advanced)[data-mobile-panel="article"] .editor-card[data-mobile-panel="article"],
+  body:not(.desktop-advanced)[data-mobile-panel="infobox"] .editor-card[data-mobile-panel="infobox"],
+  body:not(.desktop-advanced)[data-mobile-panel="sections"] .editor-card[data-mobile-panel="sections"],
+  body:not(.desktop-advanced)[data-mobile-panel="categories"] .editor-card[data-mobile-panel="categories"]{display:block}
+  body:not(.desktop-advanced) .editor-card{width:100%}
+
+  /* Advanced deliberately restores the previous all-panels desktop grid. */
+  body.desktop-advanced .editor-grid{
+    display:grid;max-width:1180px;margin:0 auto;
+    grid-template-columns:minmax(0,1fr) minmax(340px,430px);gap:16px
+  }
+  body.desktop-advanced .editor-card.wide{grid-column:1/-1}
+}
+
+/* Infobox list controls: bonus gets more room, colour gets less. */
+.item-meta-controls{justify-content:flex-start}
+.item-meta-controls .stat-input{
+  width:112px!important;min-width:112px!important;max-width:112px!important
+}
+.item-meta-controls .stat-color{
+  width:72px!important;min-width:72px!important;max-width:72px!important;
+  padding-left:7px!important;padding-right:22px!important
+}
+
+@media(max-width:760px){
+  .desktop-editor-nav{display:none!important}
+
+  /* Row delete is a normal small control, not a full-width bar. */
+  .row-top{
+    grid-template-columns:minmax(0,1fr) 112px 40px!important;
+    gap:8px;align-items:start
+  }
+  .row-top .row-label{grid-column:1;grid-row:1}
+  .row-top .row-type{grid-column:2;grid-row:1}
+  .row-top .row-remove{
+    grid-column:3!important;grid-row:1!important;
+    width:40px!important;min-width:40px!important;max-width:40px!important;
+    height:44px!important;min-height:44px!important;padding:0!important
+  }
+  .row-top .row-value{grid-column:1/-1;grid-row:2}
+
+  /* Keep list metadata compact and readable on phones. */
+  .item-meta-controls{grid-column:2!important;grid-row:2!important;display:flex!important;flex-wrap:nowrap!important;gap:6px}
+  .item-meta-controls .stat-input{width:118px!important;min-width:118px!important;max-width:118px!important}
+  .item-meta-controls .stat-color{width:74px!important;min-width:74px!important;max-width:74px!important}
+  .item-meta-controls .item-remove{width:38px!important;min-width:38px!important;max-width:38px!important;height:44px!important;min-height:44px!important}
+
+  /* Group headers also stay compact instead of producing another wide action bar. */
+  .group-card-head{grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important}
+  .group-card-head .remove-group{width:auto!important;min-width:0!important;white-space:nowrap}
+}
+
+@media(max-width:430px){
+  .row-top{grid-template-columns:minmax(0,1fr) 104px 40px!important}
+  .item-meta-controls{grid-column:1/-1!important;margin-left:53px!important}
+  .item-meta-controls .stat-input{width:112px!important;min-width:112px!important;max-width:112px!important}
+  .item-meta-controls .stat-color{width:70px!important;min-width:70px!important;max-width:70px!important}
+}
+
+@media(max-width:360px){
+  .row-top{grid-template-columns:minmax(0,1fr) 96px 38px!important}
+  .row-top .row-remove{width:38px!important;min-width:38px!important;max-width:38px!important}
+  .item-meta-controls{margin-left:0!important;grid-column:1/-1!important}
+  .item-meta-controls .stat-input{width:108px!important;min-width:108px!important;max-width:108px!important}
+}
+
+/* Keep the focused-editor selector itself out of Preview/read-only mode. */
+body.mode-preview .desktop-editor-nav,
+body.preview-clean .desktop-editor-nav{display:none!important}
+
+/* V15 — TFR-style square editor chrome + true two-column Advanced layout.
+   The advanced view uses independent vertical columns so a tall infobox never
+   pushes the article body down. */
+.editor-column{display:contents}
+
+/* Use plain text disclosure markers instead of platform/emoji triangles. */
+.advanced>summary{list-style:none;display:block;user-select:none}
+.advanced>summary::-webkit-details-marker{display:none}
+.advanced>summary::marker{content:''}
+.advanced>summary::before{content:'> ';color:var(--muted);font-family:'Electrolize',sans-serif}
+.advanced[open]>summary::before{content:'v '}
+
+/* Bring the editor chrome back toward Vector/TFR: square, flat, bordered. */
+.ui-btn,
+.workspace-tab,
+input,select,textarea,
+.rich-toolbar button,
+.rich-editor,
+.editor-card,
+.page-row,
+.image-preview,
+.file-btn,
+.advanced.boxed,
+.media-card,.group-card,.section-card,
+.media-thumb,.list-item-icon,
+.section-image-row img,.gallery-row img,
+.preview-wrap iframe,
+.modal-card,.page-type-choice,.boot-error,
+.portrait-image-picker,.item-icon-picker,
+.compact-remove,
+.mobile-return-edit{border-radius:0!important;box-shadow:none!important}
+.image-picker-plus{border-radius:0!important}
+.editor-card{background:#100a12;border-color:#55355f}
+.group-card-head{background:#1a101d}
+.workspace-tab.active{background:#1a101d}
+.ui-btn.primary{background:#7f4d9f}
+
+@media(min-width:761px){
+  body.desktop-advanced .editor-grid{
+    display:grid;
+    max-width:1400px;
+    margin:0 auto;
+    grid-template-columns:minmax(0,1fr) minmax(460px,520px);
+    gap:16px;
+    align-items:start;
+  }
+  body.desktop-advanced .editor-column{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    min-width:0;
+    align-self:start;
+  }
+  body.desktop-advanced .editor-column-main{grid-column:1}
+  body.desktop-advanced .editor-column-side{grid-column:2}
+  body.desktop-advanced .editor-column .editor-card{
+    width:100%;
+    grid-column:auto!important;
+    align-self:start;
+  }
+}
+
+/* On narrower desktop windows, Advanced stays usable by stacking the two
+   independent columns instead of overflowing horizontally. */
+@media(min-width:761px) and (max-width:1180px){
+  body.desktop-advanced .editor-grid{grid-template-columns:1fr;max-width:980px}
+  body.desktop-advanced .editor-column-main,
+  body.desktop-advanced .editor-column-side{grid-column:1}
+}
+
+@media(max-width:760px){
+  .editor-column{display:contents!important}
+  .editor-card{border-radius:0!important}
+  .mobile-page-drawer,
+  .mobile-return-edit{border-radius:0!important}
+}
+
+/* Finish the square treatment on the compact infobox controls and preview toggle. */
+.infobox-mini-toolbar button,
+.infobox-rich-editor,.item-rich-editor,
+.preview-chrome-toggle{border-radius:0!important;box-shadow:none!important}
+
+/* V16 — infobox hierarchy + desktop sidebar guarantee.
+   The infobox editor uses three visual levels from the TFR purple palette:
+   group > row > list item. Desktop keeps the project/pages sidebar visible;
+   the drawer behaviour remains phone-only. */
+
+/* Strongest boundary: a complete infobox group such as Basic Information. */
+.group-card{
+  border:1px solid #7F4D9F!important;
+  background:#0f0a11!important;
+}
+.group-card-head{
+  background:#29182e!important;
+  border-bottom:1px solid #7F4D9F!important;
+}
+.group-card-head .group-title{
+  border-color:#6d4380!important;
+  background:#100a12!important;
+}
+
+/* Middle boundary: individual fields/rows within a group. */
+.rows-wrap{background:#0c080e}
+.row-editor{
+  border-top:1px solid #583465!important;
+  background:#120c15;
+}
+.row-editor:nth-child(even){background:#151018}
+.row-editor:first-child{border-top:0!important}
+.row-tools{
+  border-top:1px solid #684078!important;
+  background:#170f1b;
+}
+
+/* Lowest boundary: entries inside an Icon / list row. */
+.list-items{
+  border-top:1px solid #34203b;
+  padding-top:8px;
+}
+.list-item{
+  border-top:0!important;
+  background:#0d090f;
+  padding:9px!important;
+}
+.list-item + .list-item{
+  border-top:1px solid #43274d!important;
+  margin-top:2px;
+  padding-top:11px!important;
+}
+
+/* Keep the compact controls visually grouped without giving every control the
+   same emphasis as its containing row. */
+.item-meta-controls{padding-top:1px}
+.item-meta-controls .stat-input,
+.item-meta-controls .stat-color,
+.item-meta-controls .item-remove,
+.infobox-mini-toolbar button{
+  border-color:#4c2e56!important;
+}
+.item-rich-editor,.infobox-rich-editor{border-color:#4f305a!important}
+
+/* Desktop/tablet layout explicitly retains the always-present page list. */
+@media(min-width:761px){
+  .app-layout{
+    display:grid!important;
+    grid-template-columns:260px minmax(0,1fr)!important;
+  }
+  body:not(.preview-clean) .page-sidebar{
+    display:flex!important;
+    position:sticky!important;
+    top:62px!important;
+    left:auto!important;
+    bottom:auto!important;
+    width:auto!important;
+    height:calc(100vh - 62px)!important;
+    transform:none!important;
+    box-shadow:none!important;
+    border-right:1px solid var(--line)!important;
+    border-bottom:0!important;
+    overflow:auto!important;
+  }
+  .mobile-header-actions,
+  .mobile-drawer-head,
+  .mobile-sidebar-actions,
+  .mobile-drawer-backdrop{display:none!important}
+}
+
+/* Phone hierarchy uses the same three levels but avoids large solid blocks. */
+@media(max-width:760px){
+  .group-card{border-color:#7F4D9F!important}
+  .group-card-head{background:#241529!important}
+  .row-editor{border-top-color:#583465!important}
+  .list-items{border-top-color:#34203b;padding-top:7px}
+  .list-item{background:#0d090f;padding:9px 0!important}
+  .list-item + .list-item{border-top-color:#43274d!important;padding-top:11px!important}
+}
+
+
+/* V17 — one consistent Pages drawer on desktop and mobile.
+   The page list is off-canvas at every editor width so it never permanently
+   consumes article editing space. The drawer is anchored to the viewport,
+   not to the document scroll position. */
+.pages-plus{width:38px!important;min-width:38px!important;padding:0!important;font-size:20px!important;line-height:1}
+.app-layout{display:block!important;grid-template-columns:none!important;min-width:0!important}
+.workspace{width:100%!important;min-width:0!important}
+
+body:not(.preview-clean) .page-sidebar{
+  display:flex!important;
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  bottom:0!important;
+  width:min(88vw,360px)!important;
+  height:100dvh!important;
+  z-index:2200!important;
+  padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px)!important;
+  border-right:1px solid #7F4D9F!important;
+  border-bottom:0!important;
+  background:#110c13!important;
+  box-shadow:12px 0 32px #000b!important;
+  transform:translateX(-105%)!important;
+  transition:transform .18s ease!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+}
+body.mobile-pages-open:not(.preview-clean) .page-sidebar{transform:translateX(0)!important}
+.mobile-drawer-head{display:flex!important;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.mobile-drawer-head .ui-btn{width:40px!important;min-width:40px!important;height:40px!important;padding:0!important}
+.mobile-drawer-backdrop{
+  display:none!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:2100!important;
+  border:0!important;
+  background:rgba(0,0,0,.58)!important;
+  padding:0!important;
+}
+body.mobile-pages-open .mobile-drawer-backdrop{display:block!important}
+body.mobile-pages-open{overflow:hidden}
+
+@media(min-width:761px){
+  .mobile-header-actions{display:none!important}
+  .mobile-sidebar-actions{display:none!important}
+  .app-actions .pages-plus{display:inline-flex!important;align-items:center;justify-content:center}
+}
+@media(max-width:760px){
+  .app-actions .pages-plus{display:none!important}
+  .mobile-header-actions{display:flex!important}
+  body:not(.preview-clean) .page-sidebar{width:min(88vw,360px)!important}
+  .mobile-sidebar-actions{display:grid!important}
+}
+
+/* V17 — every icon-only remove control stays compact on phones. Earlier
+   responsive rules made a few × buttons span an entire row. */
+@media(max-width:760px){
+  .row-top .row-remove,
+  .item-meta-controls .item-remove,
+  .compact-remove,
+  .section-image-row .media-remove,
+  .gallery-row .gallery-remove,
+  .page-delete{
+    width:40px!important;
+    min-width:40px!important;
+    max-width:40px!important;
+    height:44px!important;
+    min-height:44px!important;
+    padding:0!important;
+    justify-self:end!important;
+  }
+  .section-image-row,.gallery-row{
+    grid-template-columns:62px minmax(0,1fr) 40px!important;
+    gap:8px!important;
+    align-items:start!important;
+  }
+  .section-image-row>.media-remove,.gallery-row>.gallery-remove{
+    grid-column:3!important;
+    grid-row:1!important;
+    align-self:start!important;
+  }
+}
+
+
+/* V18 — clearer Pages navigation + restored mobile branding. */
+.brand-mobile-text{display:none}
+.pages-tab{display:inline-flex;align-items:center;justify-content:center}
+.pages-tab.drawer-active{background:#1a101d!important;color:var(--text)!important;border-color:#7F4D9F!important}
+@media(min-width:761px){
+  .pages-plus{display:none!important}
+}
+@media(max-width:760px){
+  .brand strong{display:block!important;font-size:12px!important;line-height:1!important;white-space:nowrap!important}
+  .brand-desktop-text{display:none!important}
+  .brand-mobile-text{display:inline!important}
+  .brand{gap:7px!important;flex:1 1 auto!important;min-width:0!important}
+  .brand-logo{flex:0 0 auto!important}
+  .mobile-header-actions{flex:0 0 auto!important}
+}
+@media(max-width:350px){
+  .brand strong{font-size:10px!important}
+  .mobile-header-actions .ui-btn{padding-left:7px!important;padding-right:7px!important}
+  .mobile-header-actions .mobile-plus{width:38px!important;min-width:38px!important}
+}
+
+
+/* V19 — compact sound/music controls on desktop and phones. */
+.media-toggle{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:38px!important;
+  min-width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0!important;
+  overflow:hidden;
+  border-radius:0!important;
+}
+.media-toggle svg{width:21px;height:21px;display:block;pointer-events:none}
+.media-toggle.is-muted::after{
+  content:"";
+  position:absolute;
+  left:5px;
+  top:50%;
+  width:28px;
+  height:2px;
+  background:#e14d70;
+  transform:rotate(-45deg);
+  transform-origin:center;
+  pointer-events:none;
+  box-shadow:0 0 0 1px #080309;
+}
+@media(max-width:760px){
+  .mobile-header-actions .media-toggle{
+    width:38px!important;
+    min-width:38px!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:0!important;
+  }
+  .mobile-header-actions .media-toggle svg{width:20px;height:20px}
+}
+@media(max-width:350px){
+  .brand{gap:5px!important}
+  .brand strong{font-size:9px!important}
+  .mobile-header-actions{gap:4px!important}
+  .mobile-header-actions .media-toggle{
+    width:32px!important;
+    min-width:32px!important;
+    height:38px!important;
+    min-height:38px!important;
+  }
+  .mobile-header-actions .media-toggle.is-muted::after{left:4px;width:24px}
+  .mobile-header-actions #mobilePreviewBtn{padding-left:5px!important;padding-right:5px!important;font-size:12px!important}
+  .mobile-header-actions .mobile-plus{width:34px!important;min-width:34px!important}
+}
