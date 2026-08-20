@@ -45,7 +45,7 @@
 .tfr-trait-bonus-list li{padding:1px 0}
 .tfr-trait-bonus-icon{margin-right:4px!important}
 .tfr-trait-bonus-text{vertical-align:middle}
-.tfr-trait-bonus-value{font-weight:700;margin-left:4px;white-space:nowrap}
+.tfr-trait-bonus-value{font-weight:700;margin-left:0;white-space:nowrap}
 .tfr-route-flag{overflow:visible}
 .tfr-route-flag-image{inset:4px!important;width:38px!important;height:21px!important;object-fit:fill!important;z-index:1}
 .tfr-route-flag-frame{inset:0!important;width:46px!important;height:29px!important;object-fit:fill!important;z-index:2}
