@@ -1048,3 +1048,52 @@ body.mobile-pages-open{overflow:hidden}
 .pwa-splash img{width:min(52vw,230px);height:auto;display:block}
 .pwa-status{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));z-index:9999;transform:translateX(-50%);max-width:min(92vw,520px);border:1px solid #7F4D9F;background:#100a12;color:#fff;padding:8px 12px;font-size:13px;box-shadow:0 8px 24px #0009}
 @media(max-width:760px){.pwa-status{font-size:12px;bottom:max(10px,env(safe-area-inset-bottom))}.pwa-splash img{width:min(58vw,220px)}}
+
+
+/* V28 — iOS standalone/PWA safe-area header fix.
+   Keep all editor controls below the status bar / Dynamic Island while
+   preserving the existing desktop layout. */
+@media(max-width:760px){
+  .app-header{
+    box-sizing:border-box!important;
+    height:calc(56px + env(safe-area-inset-top))!important;
+    min-height:calc(56px + env(safe-area-inset-top))!important;
+    padding-top:env(safe-area-inset-top)!important;
+    padding-left:max(10px,env(safe-area-inset-left))!important;
+    padding-right:max(10px,env(safe-area-inset-right))!important;
+    top:0!important;
+  }
+  .brand{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .brand strong{
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .mobile-header-actions{
+    flex:0 0 auto!important;
+    min-width:0!important;
+  }
+  .mobile-editor-nav{
+    top:calc(56px + env(safe-area-inset-top))!important;
+  }
+  .app-layout{
+    min-height:calc(100dvh - 56px - env(safe-area-inset-top))!important;
+  }
+  body:not(.preview-clean) .page-sidebar{
+    padding-top:calc(env(safe-area-inset-top) + 14px)!important;
+    padding-left:max(14px,env(safe-area-inset-left))!important;
+    padding-bottom:calc(env(safe-area-inset-bottom) + 14px)!important;
+  }
+}
+
+/* Landscape iPhones can also have a left/right unsafe region. */
+@media(max-width:760px) and (orientation:landscape){
+  .editor-pane,
+  .mobile-editor-nav{
+    padding-left:max(10px,env(safe-area-inset-left))!important;
+    padding-right:max(10px,env(safe-area-inset-right))!important;
+  }
+}
