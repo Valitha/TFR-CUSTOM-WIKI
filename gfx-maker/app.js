@@ -83,6 +83,9 @@ const imageCache = new Map();
 const animatedAssets=new Set();
 const animatedDurations=new Map();
 let animationLoopId=0,animationRenderBusy=false,animationLastPaint=0;
+const animatedImageElements=new Map();
+const animatedImagesBySrc=new Map();
+let animationImageHost=null;
 const assetUrls = {
   flag: placeholder('flag_eu.png'),
   leader: placeholder('leader_unknown.png'),
@@ -168,9 +171,14 @@ async function dbDelete(key){ const db=await openDB(); return new Promise((res,r
 
 function gifDurationMsFromBytes(bytes){let total=0,frames=0;if(bytes)for(let i=0;i+7<bytes.length;i++)if(bytes[i]===0x21&&bytes[i+1]===0xF9&&bytes[i+2]===0x04){let delay=(bytes[i+4]|(bytes[i+5]<<8))*10;if(delay<20)delay=100;total+=delay;frames++}return Math.max(1200,Math.min(6000,frames&&total?total:3000))}
 function hasGifHeader(bytes){return bytes?.length>=6&&bytes[0]===71&&bytes[1]===73&&bytes[2]===70&&bytes[3]===56&&(bytes[4]===55||bytes[4]===57)&&bytes[5]===97}
-async function gifBytesFromBlob(blob){try{const bytes=new Uint8Array(await blob.arrayBuffer());return hasGifHeader(bytes)?bytes:null}catch{return null}}
+async function gifBytesFromBlob(blob){try{const head=new Uint8Array(await blob.slice(0,6).arrayBuffer());if(!hasGifHeader(head))return null;return new Uint8Array(await blob.arrayBuffer())}catch{return null}}
 function looksLikeImageFile(file){return !!file&&(file.type?.startsWith('image/')||/\.(?:png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(file.name||''))}
-async function noteAssetAnimation(key,blob){const gifByType=blob?.type?.toLowerCase()==='image/gif',gifByName=/\.gif$/i.test(blob?.name||''),bytes=gifByType||gifByName?await gifBytesFromBlob(blob):null;if(bytes){animatedAssets.add(key);animatedDurations.set(key,gifDurationMsFromBytes(bytes))}else{animatedAssets.delete(key);animatedDurations.delete(key)}ensureAnimationLoop()}
+function animatedSourceForKey(key){if(Object.prototype.hasOwnProperty.call(assetUrls,key))return assetUrls[key]||'';if(key==='ideologyIcon')return customIconUrls.get('ideology')||'';if(key==='factionIcon')return customIconUrls.get('faction')||'';return ''}
+function ensureAnimationImageHost(){if(animationImageHost?.isConnected)return animationImageHost;const host=document.createElement('div');host.setAttribute('aria-hidden','true');Object.assign(host.style,{position:'fixed',left:'0',top:'0',width:'2px',height:'2px',overflow:'hidden',opacity:'.001',pointerEvents:'none',zIndex:'2147483646'});document.body.appendChild(host);animationImageHost=host;return host}
+function removeAnimatedImage(key){const old=animatedImageElements.get(key);if(!old)return;old.img.remove();if(animatedImagesBySrc.get(old.src)===old.img)animatedImagesBySrc.delete(old.src);animatedImageElements.delete(key);imageCache.delete(old.src)}
+function keepAnimatedImagePlaying(key){const src=animatedSourceForKey(key);if(!src)return;const old=animatedImageElements.get(key);if(old?.src===src)return;removeAnimatedImage(key);const img=new Image();img.alt='';img.loading='eager';Object.assign(img.style,{position:'absolute',left:'0',top:'0',width:'2px',height:'2px',maxWidth:'none',maxHeight:'none'});ensureAnimationImageHost().appendChild(img);img.src=src;animatedImageElements.set(key,{src,img});animatedImagesBySrc.set(src,img);imageCache.delete(src)}
+function clearAssetAnimation(key){animatedAssets.delete(key);animatedDurations.delete(key);removeAnimatedImage(key)}
+async function noteAssetAnimation(key,blob){const bytes=blob?await gifBytesFromBlob(blob):null;if(bytes){animatedAssets.add(key);animatedDurations.set(key,gifDurationMsFromBytes(bytes));keepAnimatedImagePlaying(key)}else clearAssetAnimation(key);ensureAnimationLoop()}
 function setObjectUrl(key, blob){
   if(objectUrls.has(key)) URL.revokeObjectURL(objectUrls.get(key));
   const url=URL.createObjectURL(blob); objectUrls.set(key,url); assetUrls[key]=url;
@@ -247,7 +255,7 @@ function resetAssetTransform(key){
 async function clearAsset(key){
   await dbDelete(key).catch(()=>{});
   if(objectUrls.has(key)){URL.revokeObjectURL(objectUrls.get(key));objectUrls.delete(key);}
-  assetUrls[key]=assetDefaults[key]; animatedAssets.delete(key);animatedDurations.delete(key); resetAssetTransform(key); saveState(); imageCache.clear(); updateThumbs(); bindValuesOnly(); updateOutputs(); scheduleRender();
+  assetUrls[key]=assetDefaults[key]; clearAssetAnimation(key); resetAssetTransform(key); saveState(); imageCache.clear(); updateThumbs(); bindValuesOnly(); updateOutputs(); scheduleRender();
 }
 
 function updateThumbs(){
@@ -266,6 +274,8 @@ function updateThumbs(){
 
 function loadImage(src){
   if(!src) return Promise.resolve(null);
+  const live=animatedImagesBySrc.get(src);
+  if(live){if(live.complete&&live.naturalWidth)return Promise.resolve(live);return new Promise(resolve=>{const done=()=>resolve(live.naturalWidth?live:null);live.addEventListener('load',done,{once:true});live.addEventListener('error',done,{once:true});setTimeout(done,3000)})}
   if(imageCache.has(src)) return imageCache.get(src);
   const p=new Promise(resolve=>{ const im=new Image(); im.decoding='async'; im.onload=()=>resolve(im); im.onerror=()=>resolve(null); im.src=src; });
   imageCache.set(src,p); return p;
@@ -473,7 +483,7 @@ async function openIconPicker(mode){
 async function removeStoredCustomIcon(mode){
   await dbDelete(CUSTOM_ICON_DB_KEYS[mode]).catch(()=>{});
   if(customIconUrls.has(mode)){URL.revokeObjectURL(customIconUrls.get(mode));customIconUrls.delete(mode)}
-  animatedAssets.delete(mode+'Icon');animatedDurations.delete(mode+'Icon');
+  clearAssetAnimation(mode+'Icon');
 }
 async function chooseBuiltInIcon(mode,src,name){
   await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='builtin';state.country[mode+'Icon']=src;state.country[mode+'IconName']=name;saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
@@ -498,22 +508,23 @@ async function renderIconGrid(search){
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 function exportModePopup(){return new Promise(resolve=>{const dlg=document.createElement('dialog');dlg.className='disclaimer-dialog';dlg.innerHTML='<div class="disclaimer-card"><h2>Export image</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="ui-btn" type="button" data-mode="static">Static image</button><button class="ui-btn primary" type="button" data-mode="animated">Animated image</button></div></div>';document.body.appendChild(dlg);const done=v=>{dlg.close();dlg.remove();resolve(v)};dlg.querySelector('[data-mode="static"]').onclick=()=>done('static');dlg.querySelector('[data-mode="animated"]').onclick=()=>done('animated');dlg.addEventListener('cancel',e=>{e.preventDefault();done(null)});dlg.addEventListener('click',e=>{if(e.target===dlg)done(null)});dlg.showModal()})}
-let __apngCrcTable=null;
-function apngCrcTable(){if(__apngCrcTable)return __apngCrcTable;const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return __apngCrcTable=t}
-function apngCrc32(bytes){let c=0xFFFFFFFF,t=apngCrcTable();for(const b of bytes)c=t[(c^b)&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
-function apngU32(n){return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255])}
-function apngU16(n){return new Uint8Array([(n>>>8)&255,n&255])}
-function apngJoin(...parts){const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let off=0;for(const part of parts){out.set(part,off);off+=part.length}return out}
-function apngChunk(type,data=new Uint8Array()){const t=new TextEncoder().encode(type),crc=apngU32(apngCrc32(apngJoin(t,data)));return apngJoin(apngU32(data.length),t,data,crc)}
-async function apngDeflate(bytes){if(typeof CompressionStream==='undefined')throw new Error('Animated image export is unavailable in this browser.');return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer())}
-async function encodeApngFromCanvas(firstCanvas,frameCount,delayMs,getFrame){const w=firstCanvas.width,h=firstCanvas.height,chunks=[new Uint8Array([137,80,78,71,13,10,26,10]),apngChunk('IHDR',apngJoin(apngU32(w),apngU32(h),new Uint8Array([8,6,0,0,0]))),apngChunk('acTL',apngJoin(apngU32(frameCount),apngU32(0)))];let seq=0;for(let i=0;i<frameCount;i++){const c=i===0?firstCanvas:await getFrame(i),rgba=c.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,row=w*4,raw=new Uint8Array((row+1)*h);for(let y=0;y<h;y++){const o=y*(row+1);raw[o]=0;raw.set(rgba.subarray(y*row,(y+1)*row),o+1)}const compressed=await apngDeflate(raw),delay=Math.max(1,Math.min(65535,Math.round(delayMs)));chunks.push(apngChunk('fcTL',apngJoin(apngU32(seq++),apngU32(w),apngU32(h),apngU32(0),apngU32(0),apngU16(delay),apngU16(1000),new Uint8Array([0,0]))));if(i===0)chunks.push(apngChunk('IDAT',compressed));else chunks.push(apngChunk('fdAT',apngJoin(apngU32(seq++),compressed)))}chunks.push(apngChunk('IEND'));return new Blob(chunks,{type:'image/png'})}
+let __gifPaletteCache=null,__gifLevelCache=null;
+function gifColorLevels(){if(__gifLevelCache)return __gifLevelCache;const r=new Uint8Array(256),g=new Uint8Array(256),b=new Uint8Array(256);for(let i=0;i<256;i++){r[i]=Math.round(i*5/255);g[i]=Math.round(i*6/255);b[i]=Math.round(i*5/255)}return __gifLevelCache={r,g,b}}
+function gifPalette(){if(__gifPaletteCache)return __gifPaletteCache;const out=new Uint8Array(768);for(let rl=0;rl<6;rl++)for(let gl=0;gl<7;gl++)for(let bl=0;bl<6;bl++){const idx=1+(rl*42)+(gl*6)+bl;out[idx*3]=Math.round(rl*255/5);out[idx*3+1]=Math.round(gl*255/6);out[idx*3+2]=Math.round(bl*255/5)}return __gifPaletteCache=out}
+function gifIndexPixels(rgba){const out=new Uint8Array(rgba.length>>2),levels=gifColorLevels();for(let i=0,j=0;i<rgba.length;i+=4,j++)out[j]=rgba[i+3]<128?0:1+levels.r[rgba[i]]*42+levels.g[rgba[i+1]]*6+levels.b[rgba[i+2]];return out}
+function gifLzw(indexed,minCodeSize=8){const clear=1<<minCodeSize,end=clear+1,bytes=[],blocks=[];let cur=0,bits=0,codeSize=minCodeSize+1,next=end+1,dict=new Map();const write=code=>{cur|=code<<bits;bits+=codeSize;while(bits>=8){bytes.push(cur&255);cur>>>=8;bits-=8}};const reset=()=>{dict=new Map();codeSize=minCodeSize+1;next=end+1};write(clear);if(indexed.length){let prefix=indexed[0];for(let i=1;i<indexed.length;i++){const k=indexed[i],key=prefix*256+k,found=dict.get(key);if(found!==undefined){prefix=found;continue}write(prefix);if(next<4096){dict.set(key,next++);if(next===(1<<codeSize)&&codeSize<12)codeSize++}else{write(clear);reset()}prefix=k}write(prefix)}write(end);if(bits>0)bytes.push(cur&255);for(let i=0;i<bytes.length;i+=255){const n=Math.min(255,bytes.length-i);blocks.push(n,...bytes.slice(i,i+n))}blocks.push(0);return new Uint8Array(blocks)}
+function gifChangedRect(now,prev,w,h){if(!prev)return{x:0,y:0,w,h,pixels:now};let minX=w,minY=h,maxX=-1,maxY=-1;for(let y=0,p=0;y<h;y++)for(let x=0;x<w;x++,p++)if(now[p]!==prev[p]){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}if(maxX<0)return{x:0,y:0,w:1,h:1,pixels:now.subarray(0,1)};const rw=maxX-minX+1,rh=maxY-minY+1,out=new Uint8Array(rw*rh);for(let y=0;y<rh;y++)out.set(now.subarray((minY+y)*w+minX,(minY+y)*w+minX+rw),y*rw);return{x:minX,y:minY,w:rw,h:rh,pixels:out}}
+function createGifEncoder(width,height){const chunks=[],palette=gifPalette();let previous=null,started=false,finished=false;const push=(...xs)=>chunks.push(Uint8Array.from(xs));const u16=n=>[n&255,(n>>8)&255];const ascii=s=>Uint8Array.from([...s].map(c=>c.charCodeAt(0)));chunks.push(ascii('GIF89a'));push(...u16(width),...u16(height),0xF7,0,0);chunks.push(palette);push(0x21,0xFF,0x0B);chunks.push(ascii('NETSCAPE2.0'));push(3,1,0,0,0);return{addFrame(rgba,delayMs=120){if(finished)throw new Error('GIF is already finished.');const indexed=gifIndexPixels(rgba),rect=gifChangedRect(indexed,previous,width,height);previous=indexed;const delay=Math.max(2,Math.min(65535,Math.round(delayMs/10)));push(0x21,0xF9,4,5,...u16(delay),0,0);push(0x2C,...u16(rect.x),...u16(rect.y),...u16(rect.w),...u16(rect.h),0);push(8);chunks.push(gifLzw(rect.pixels,8));started=true},finish(){if(!started)throw new Error('No GIF frames were added.');if(!finished){push(0x3B);finished=true}return new Blob(chunks,{type:'image/gif'})}}}
 function downloadImageBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.download=filename;a.href=url;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
 async function renderActiveNow(){const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];if(fn)await fn(seq)}
+function canvasRgba(c=canvas){return c.getContext('2d',{willReadFrequently:true}).getImageData(0,0,c.width,c.height).data}
 async function exportPNG(){
   const mode=activeToolHasAnimation()?await exportModePopup():'static';if(!mode)return;const safe=activeTool.replace(/[^a-z0-9_-]+/gi,'-');
   await renderActiveNow();
   if(mode==='static'){const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(blob)downloadImageBlob(blob,`tfr-${safe}-gfx.png`);return}
-  const delay=100,duration=activeAnimationDuration(),frameCount=Math.max(2,Math.min(60,Math.ceil(duration/delay))),copy=document.createElement('canvas');copy.width=canvas.width;copy.height=canvas.height;copy.getContext('2d').drawImage(canvas,0,0);const started=performance.now();const blob=await encodeApngFromCanvas(copy,frameCount,delay,async i=>{const target=started+i*delay,wait=target-performance.now();if(wait>0)await new Promise(r=>setTimeout(r,wait));await renderActiveNow();const c=document.createElement('canvas');c.width=canvas.width;c.height=canvas.height;c.getContext('2d').drawImage(canvas,0,0);return c});downloadImageBlob(blob,`tfr-${safe}-gfx-animated.png`);
+  const delay=125,duration=activeAnimationDuration(),frameCount=Math.max(2,Math.min(48,Math.ceil(duration/delay))),gif=createGifEncoder(canvas.width,canvas.height);await new Promise(r=>setTimeout(r,80));
+  for(let i=0;i<frameCount;i++){if(i)await new Promise(r=>setTimeout(r,delay));await renderActiveNow();gif.addFrame(canvasRgba(),delay);if(i%4===3)await new Promise(r=>setTimeout(r,0))}
+  downloadImageBlob(gif.finish(),`tfr-${safe}-gfx-animated.gif`);
 }
 async function resetTool(){
   const fresh=cloneDefaults(); state[activeTool]=fresh[activeTool];
