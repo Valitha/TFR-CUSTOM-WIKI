@@ -414,13 +414,17 @@ function drawWrapped(text,x,y,maxWidth,lineHeight,font,color='#000',align='left'
   lines.forEach((line,i)=>ctx.fillText(line,tx,y+i*lineHeight,maxWidth)); return lines.length*lineHeight;
 }
 
-function setCanvas(w,h,title){
-  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';}
-  $('#previewTitle').textContent=title; $('#previewSize').textContent=`${w} × ${h}`;
+function setCanvas(w,h,title,scale=1){
+  const pixelWidth=Math.round(w*scale),pixelHeight=Math.round(h*scale);
+  if(canvas.width!==pixelWidth||canvas.height!==pixelHeight){canvas.width=pixelWidth;canvas.height=pixelHeight;}
+  ctx.setTransform(scale,0,0,scale,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  $('#previewTitle').textContent=title; $('#previewSize').textContent=`${pixelWidth} × ${pixelHeight}`;
 }
 
 async function renderCountry(seq){
-  setCanvas(524,248,'Country');
+  setCanvas(524,248,'Country',2);
   ctx.clearRect(0,0,524,248);
   // The CSS background is only for the screen. Fill the canvas with black so exported PNGs keep the black panel.
   ctx.fillStyle='#000';
@@ -704,7 +708,7 @@ function createGifEncoder(width,height,paletteInfo){
 function exportFrameTimes(){
   const duration=activeAnimationDuration();let step=125;
   for(const key of animatedKeysForTool()){const animation=decodedAnimations.get(key);if(!animation)continue;for(const frame of animation.frames)step=Math.min(step,Math.max(80,frame.delay))}
-  step=Math.max(100,Math.min(140,step));let count=Math.max(2,Math.ceil(duration/step));if(count>32){count=32;step=duration/count}return{duration,step,count};
+  step=Math.max(100,Math.min(140,step));let count=Math.max(2,Math.ceil(duration/step));const maxFrames=activeTool==='country'?24:32;if(count>maxFrames){count=maxFrames;step=duration/count}return{duration,step,count};
 }
 async function exportPNG(){
   const mode=activeToolHasAnimation()?await exportModePopup():'static';if(!mode)return;const safe=activeTool.replace(/[^a-z0-9_-]+/gi,'-');
