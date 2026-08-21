@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tfr-wiki-shell-1.0.6';
+const CACHE_NAME = 'tfr-wiki-shell-1.0.7';
 const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const CORE = [
   HTML2CANVAS_URL,
