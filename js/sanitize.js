@@ -42,10 +42,9 @@ export function sanitize(html){
     }
   };
   walk(t.content);
-  /* If purple was applied after underline, browsers commonly produce
-     <u><span class="purple-text">…</span></u>. Text-decoration colour comes
-     from the outer <u>, so lift purple runs outside it and put a fresh <u>
-     inside. This makes purple + underline order-independent. */
+  /* Purple and underline can end up nested in either order.
+     Put the underline inside purple text so both styles use the same color.
+     This also makes the result the same no matter which style was added first. */
   for(const u of [...t.content.querySelectorAll('u')]){
     const children=[...u.childNodes];
     if(!children.some(n=>n.nodeType===1&&n.classList?.contains('purple-text')))continue;

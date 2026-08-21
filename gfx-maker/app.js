@@ -49,8 +49,10 @@ const DEFAULTS = {
     ],
     ideologyIcon: '../assets/icon-library/ideology/right_populism_USA.webp',
     ideologyIconName: 'right populism USA',
+    ideologyIconMode: 'builtin',
     factionIcon: '../assets/icon-library/factions/GFX_NATO_Member.webp',
-    factionIconName: 'NATO Member'
+    factionIconName: 'NATO Member',
+    factionIconMode: 'builtin'
   },
   event: {
     title: 'Major Event',
@@ -90,6 +92,8 @@ const assetUrls = {
   super: placeholder('super_event.png')
 };
 const objectUrls = new Map();
+const customIconUrls = new Map();
+const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon'};
 
 const SOUND_PREF_KEY = 'tfr-sound-muted-v1';
 const SOUND_URLS = {
@@ -168,9 +172,28 @@ function setObjectUrl(key, blob){
   if(objectUrls.has(key)) URL.revokeObjectURL(objectUrls.get(key));
   const url=URL.createObjectURL(blob); objectUrls.set(key,url); assetUrls[key]=url;
 }
+function setCustomIconObjectUrl(mode,blob){
+  if(customIconUrls.has(mode))URL.revokeObjectURL(customIconUrls.get(mode));
+  const url=URL.createObjectURL(blob);customIconUrls.set(mode,url);return url;
+}
+function countryIconMode(mode){return state.country?.[mode+'IconMode']||'builtin'}
+function countryIconSrc(mode){
+  const selected=countryIconMode(mode);
+  if(selected==='none')return '';
+  if(selected==='custom')return customIconUrls.get(mode)||'';
+  return state.country?.[mode+'Icon']||'';
+}
 async function restoreAssets(){
   for(const key of Object.keys(assetUrls)){
     try{ const blob=await dbGet(key); if(blob){setObjectUrl(key,blob);await noteAssetAnimation(key,blob)} }catch(e){ console.warn('asset restore failed',key,e); }
+  }
+  for(const mode of ['ideology','faction']){
+    if(countryIconMode(mode)!=='custom')continue;
+    try{
+      const blob=await dbGet(CUSTOM_ICON_DB_KEYS[mode]);
+      if(blob){setCustomIconObjectUrl(mode,blob);await noteAssetAnimation(mode+'Icon',blob)}
+      else{state.country[mode+'IconMode']='none';state.country[mode+'IconName']='No icon';saveState();}
+    }catch(e){console.warn('custom icon restore failed',mode,e)}
   }
   updateThumbs(); scheduleRender();
 }
@@ -230,8 +253,12 @@ function updateThumbs(){
     $('#'+id).src=assetUrls[key];
     const clear=$(`[data-clear-asset="${key}"]`); if(clear)clear.hidden=!objectUrls.has(key);
   }
-  $('#ideologyThumb').src=state.country.ideologyIcon; $('#ideologyName').textContent=state.country.ideologyIconName||'Selected ideology';
-  $('#factionThumb').src=state.country.factionIcon; $('#factionName').textContent=state.country.factionIconName||'Selected faction';
+  for(const mode of ['ideology','faction']){
+    const img=$('#'+mode+'Thumb'),name=$('#'+mode+'Name'),button=$('#choose'+(mode==='ideology'?'Ideology':'Faction')),src=countryIconSrc(mode);
+    if(src){img.src=src;img.hidden=false}else{img.removeAttribute('src');img.hidden=true}
+    button?.classList.toggle('no-icon',!src);
+    name.textContent=countryIconMode(mode)==='none'?'No icon':(state.country[mode+'IconName']||(mode==='ideology'?'Selected ideology':'Selected faction'));
+  }
 }
 
 function loadImage(src){
@@ -278,13 +305,12 @@ function setCanvas(w,h,title){
 async function renderCountry(seq){
   setCanvas(524,248,'Country');
   ctx.clearRect(0,0,524,248);
-  // The CSS canvas background is not part of an exported PNG. Paint the
-  // country canvas itself so exports remain an opaque black HOI4 panel.
+  // The CSS background is only for the screen. Fill the canvas with black so exported PNGs keep the black panel.
   ctx.fillStyle='#000';
   ctx.fillRect(0,0,524,248);
   const imgs=await Promise.all([
     loadImage(template('diplo_upper_win_bg.png')),loadImage(template('diplo_top_bg_diplo_tab.png')),loadImage(template('Leader_Background.png')),loadImage(template('diplo_leader_frame.png')),loadImage(template('flag_overlay.png')),loadImage(template('pol_goal_progress_frame.png')),loadImage(template('pol_goal_progress.png')),loadImage(template('diplo_goal_button.png')),loadImage(template('bck_shadow.png')),loadImage(template('pol_piechart_overlay.png')),
-    loadImage(assetUrls.flag),loadImage(assetUrls.leader),loadImage(assetUrls.focus),loadImage(state.country.ideologyIcon),loadImage(state.country.factionIcon)
+    loadImage(assetUrls.flag),loadImage(assetUrls.leader),loadImage(assetUrls.focus),loadImage(countryIconSrc('ideology')),loadImage(countryIconSrc('faction'))
   ]); if(seq!==renderSeq)return;
   const [upper,tab,leaderBg,leaderFrame,flagOverlay,progressFrame,progress,goalButton,shadow,pieOverlay,flag,leader,focus,ideology,faction]=imgs;
 
@@ -324,7 +350,7 @@ async function renderCountry(seq){
   ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
   const ts=state.country.textSizes||DEFAULTS.country.textSizes;
   ctx.fillStyle='#d7d7d7';ctx.textAlign='left';ctx.textBaseline='top';
-  // Keep the three top lines clear of the faction emblem at the right edge.
+  // Leave room for the faction icon on the right side of the top text.
   let size=fitText(state.country.country,210,Number(ts.country)||16,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.country,230,8);
   size=fitText(state.country.faction,210,Number(ts.faction)||14,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.faction,230,28);
   size=fitText(state.country.leader,210,Number(ts.leader)||15,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.leader,230,48);
@@ -332,9 +358,8 @@ async function renderCountry(seq){
   ctx.font=textFont(fitText(state.country.ideologyText,270,Number(ts.ideology)||15,8,true),true);ctx.fillText(state.country.ideologyText,238,113);
   ctx.font=textFont(fitText(state.country.election,270,Number(ts.election)||14,8,true),true);ctx.fillStyle='#e7b676';ctx.fillText(state.country.election,238,135);
 
-  // Center against the actual magenta inner focus rectangle (not the full asset).
-  // diplo_goal_button.png is drawn at x=230.5,y=170 and its inner box center is
-  // x=141,y=30.5 inside the source image -> canvas center 371.5,200.5.
+  // Center the focus name on the pink box inside the button image, not the whole image.
+  // The button starts at (230.5, 170). Its inner box center is (141, 30.5), so the text center is (371.5, 200.5).
   ctx.fillStyle='#d7d7d7';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font=textFont(fitText(state.country.focusText,238,Number(ts.focus)||14,8,true),true);
   ctx.fillText(state.country.focusText,371.5,200.5,238);
@@ -411,7 +436,7 @@ function addPieSlice(){
   saveState();renderPieEditor();scheduleRender();
 }
 
-function animatedKeysForTool(tool=activeTool){return({country:['flag','leader','focus'],event:['event'],news:['news'],super:['super']}[tool]||[])}
+function animatedKeysForTool(tool=activeTool){return({country:['flag','leader','focus','ideologyIcon','factionIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
 function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
 function activeAnimationDuration(){let d=0;for(const k of animatedKeysForTool())if(animatedAssets.has(k))d=Math.max(d,animatedDurations.get(k)||3000);return Math.max(1200,Math.min(6000,d||3000))}
 function ensureAnimationLoop(){if(animationLoopId||!activeToolHasAnimation())return;const tick=now=>{animationLoopId=0;if(!activeToolHasAnimation())return;if(!document.hidden&&now-animationLastPaint>=70&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
@@ -442,11 +467,29 @@ function normalizeIconSrc(src){ if(src.startsWith('./'))return '../'+src.slice(2
 async function openIconPicker(mode){
   iconMode=mode; $('#iconDialogTitle').textContent=mode==='ideology'?'Choose ideology icon':'Choose alliance / faction icon'; $('#iconSearch').value=''; await renderIconGrid(''); $('#iconDialog').showModal(); setTimeout(()=>$('#iconSearch').focus(),50);
 }
+async function removeStoredCustomIcon(mode){
+  await dbDelete(CUSTOM_ICON_DB_KEYS[mode]).catch(()=>{});
+  if(customIconUrls.has(mode)){URL.revokeObjectURL(customIconUrls.get(mode));customIconUrls.delete(mode)}
+  animatedAssets.delete(mode+'Icon');animatedDurations.delete(mode+'Icon');
+}
+async function chooseBuiltInIcon(mode,src,name){
+  await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='builtin';state.country[mode+'Icon']=src;state.country[mode+'IconName']=name;saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+}
+async function chooseNoIcon(mode){
+  await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='none';state.country[mode+'Icon']='';state.country[mode+'IconName']='No icon';saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+}
+async function handleCustomIconInput(input){
+  const file=input.files?.[0],mode=iconMode;input.value='';if(!file)return;
+  if(!file.type.startsWith('image/')){alert('Please choose an image file.');return}
+  try{
+    await dbSet(CUSTOM_ICON_DB_KEYS[mode],file);setCustomIconObjectUrl(mode,file);await noteAssetAnimation(mode+'Icon',file);state.country[mode+'IconMode']='custom';state.country[mode+'IconName']=file.name||'Custom icon';saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+  }catch(e){alert('Could not store that image locally.');console.error(e)}
+}
 async function renderIconGrid(search){
   const list=await loadManifest(); const cat=iconMode==='ideology'?'ideology':'factions'; const q=search.trim().toLowerCase();
   const filtered=list.filter(x=>x.category===cat && (!q || x.name.toLowerCase().includes(q) || x.id.toLowerCase().includes(q))).slice(0,500);
   const grid=$('#iconGrid'); grid.innerHTML=''; const frag=document.createDocumentFragment();
-  for(const item of filtered){ const b=document.createElement('button'); b.type='button';b.className='icon-option'; const src=normalizeIconSrc(item.src); b.innerHTML=`<img loading="lazy" src="${src}" alt=""><span>${escapeHtml(item.name)}</span>`; b.onclick=()=>{ if(iconMode==='ideology'){state.country.ideologyIcon=src;state.country.ideologyIconName=item.name;}else{state.country.factionIcon=src;state.country.factionIconName=item.name;} saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();}; frag.appendChild(b); }
+  for(const item of filtered){ const b=document.createElement('button'); b.type='button';b.className='icon-option'; const src=normalizeIconSrc(item.src); b.innerHTML=`<img loading="lazy" src="${src}" alt=""><span>${escapeHtml(item.name)}</span>`; b.onclick=()=>chooseBuiltInIcon(iconMode,src,item.name); frag.appendChild(b); }
   grid.appendChild(frag); if(!filtered.length)grid.innerHTML='<div class="empty">No matching icons.</div>';
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -473,6 +516,7 @@ async function resetTool(){
   const fresh=cloneDefaults(); state[activeTool]=fresh[activeTool];
   const keys={country:['flag','leader','focus'],event:['event'],news:['news'],super:['super']}[activeTool]||[];
   for(const k of keys) await clearAsset(k);
+  if(activeTool==='country')for(const mode of ['ideology','faction'])await removeStoredCustomIcon(mode);
   saveState(); bindValuesOnly(); updateThumbs(); updateOutputs(); renderPieEditor(); scheduleRender();
 }
 function bindValuesOnly(){ $$('[data-bind]').forEach(el=>{const val=getPath(state,el.dataset.bind);el.value=val??'';}); }
@@ -488,7 +532,7 @@ function init(){
   $$('.tool-tab').forEach(b=>b.onclick=()=>switchTool(b.dataset.tool)); $('#mobileToolSelect').onchange=e=>switchTool(e.target.value);
   $('#flagFile').onchange=e=>handleAssetInput('flag',e.target); $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
   $$('[data-clear-asset]').forEach(b=>b.onclick=()=>clearAsset(b.dataset.clearAsset));
-  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#addPieSlice').onclick=addPieSlice;
+  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#iconUploadInput').onchange=e=>handleCustomIconInput(e.target); $('#iconNoIconBtn').onclick=()=>chooseNoIcon(iconMode); $('#addPieSlice').onclick=addPieSlice;
   $('#exportBtn').onclick=exportPNG; $('#resetToolBtn').onclick=()=>{if(confirm('Reset this GFX to its defaults?')) resetTool();};
   switchTool(activeTool); restoreAssets();
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>scheduleRender()).catch(()=>{});

@@ -1,4 +1,4 @@
-# TFR GFX Maker (from-scratch alpha v31)
+# TFR GFX Maker
 
 This folder is a new implementation written for the custom wiki project. It does **not** contain CreativeTFR application/source code.
 

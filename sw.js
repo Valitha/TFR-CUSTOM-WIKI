@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tfr-wiki-shell-v41';
+const CACHE_NAME = 'tfr-wiki-shell-1.0';
 const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const CORE = [
   HTML2CANVAS_URL,
@@ -87,7 +87,7 @@ const CORE = [
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // One missing optional file should not prevent the whole PWA from installing.
+    // Skip missing optional files so one bad asset does not block the PWA install.
     await Promise.all(CORE.map(url => cache.add(url).catch(() => null)));
   })());
 });
@@ -133,8 +133,7 @@ self.addEventListener('fetch', event => {
   }
   if (url.origin !== self.location.origin) return;
 
-  // Let the browser handle byte-range audio requests normally. The editor itself
-  // remains available offline even if iOS chooses a range request for the music.
+  // Let the browser handle partial audio requests. This keeps iPhone music requests from getting stuck in the app cache.
   if (request.headers.has('range')) return;
 
   const appShell = request.mode === 'navigate' || /\.(?:html?|js|css|webmanifest|json)$/i.test(url.pathname);

@@ -11,7 +11,7 @@
   };
 
   if (standalone) {
-    // Keep the animated logo visible just long enough to bridge the Home Screen launch.
+    // Show the animated logo long enough to cover the short Home Screen launch delay.
     window.addEventListener('load', () => window.setTimeout(hideSplash, 650), { once: true });
     window.setTimeout(hideSplash, 2200);
   } else if (splash) {
@@ -23,7 +23,7 @@
   window.addEventListener('load', async () => {
     try {
       const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-      // Ask the browser to check the service-worker script whenever the editor launches.
+      // Check for a newer service worker each time the editor opens.
       registration.update().catch(() => {});
       if (status && standalone && !navigator.onLine) {
         status.textContent = 'Offline mode';

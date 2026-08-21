@@ -9,7 +9,7 @@ body{cursor:url('../assets/Cursor1.png'),pointer}button,a,summary,.file-btn{curs
 .editor-pane{padding:18px}.editor-grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);gap:16px}.editor-card{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}.editor-card.wide{grid-column:1/-1}.compact-card{padding:13px 16px}.card-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.card-title-row small{color:var(--pink);font-size:9px;letter-spacing:.12em}.card-title-row h2{margin:3px 0 0;font-size:20px}.compact-actions{display:flex;gap:6px;flex-wrap:wrap}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.field.no-margin{margin:0}.field>span,.section-label{font-size:11px;color:var(--muted)}input,select,textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:7px;background:#0c080e;color:var(--text);padding:9px 10px;min-height:40px;outline:none}input:focus,select:focus,textarea:focus,.rich-editor:focus{border-color:var(--purple)}
 .rich-toolbar{display:flex;gap:4px;flex-wrap:wrap}.rich-toolbar button{border:1px solid var(--line);background:#0c080e;color:var(--text);border-radius:5px;padding:5px 8px;min-height:31px}.rich-editor{min-height:125px;border:1px solid var(--line);border-radius:7px;background:#0c080e;padding:10px;line-height:1.55;outline:none;overflow-wrap:anywhere}.rich-editor:empty:before{content:'Write here…';color:#756b79}.rich-editor img.inline-icon{max-width:26px;max-height:26px;vertical-align:middle;object-fit:contain;margin:0 .18em}.rich-editor a{color:var(--link)}
-.media-line{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;align-items:center}.media-line.inside{margin-top:10px}.image-preview{width:86px;height:86px;border:1px solid var(--line);border-radius:7px;background:#080509;display:grid;place-items:center;overflow:hidden}.image-preview img{max-width:100%;max-height:100%;object-fit:contain}.media-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.file-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;padding:7px 10px;position:relative;overflow:hidden}.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}.advanced{margin-top:8px}.advanced>summary{color:var(--muted);font-size:11px}.advanced-grid{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;margin-top:8px}.advanced-grid label{font-size:11px;color:var(--muted)}.advanced-grid label input{margin-top:4px}.advanced.boxed{border:1px solid var(--line);border-radius:8px;padding:10px;margin:12px 0}.stack{display:flex;flex-direction:column;gap:10px}
+.media-line{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;align-items:center}.media-line.inside{margin-top:10px}.image-preview{width:86px;height:86px;border:1px solid var(--line);border-radius:7px;background:#080509;display:grid;place-items:center;overflow:hidden}.image-preview img{max-width:100%;max-height:100%;object-fit:contain}.media-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.file-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;padding:7px 10px;position:relative;overflow:hidden}.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}.advanced{margin-top:8px}.advanced>summary{color:var(--muted);font-size:11px}.advanced-grid{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;margin-top:8px}.advanced-grid label{font-size:11px;color:var(--muted)}.advanced-grid label input{margin-top:4px}.lead-image-quote-field{display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:11px;color:var(--muted)}.lead-image-quote-field textarea{min-height:92px;resize:vertical;line-height:1.45}.advanced.boxed{border:1px solid var(--line);border-radius:8px;padding:10px;margin:12px 0}.stack{display:flex;flex-direction:column;gap:10px}
 .media-card,.group-card,.section-card{border:1px solid var(--line);border-radius:9px;background:rgba(0,0,0,.12);padding:11px}.media-card-head,.group-card-head,.section-card-head{display:flex;gap:8px;align-items:center}.media-card-head input,.group-card-head input,.section-card-head input{flex:1}.media-thumb{width:54px;height:54px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#080509}.media-card-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:8px}.group-card{padding:0;overflow:hidden}.group-card-head{padding:10px;background:rgba(127,77,159,.11)}.rows-wrap{display:flex;flex-direction:column}.row-editor{padding:10px;border-top:1px solid var(--line)}.row-top{display:grid;grid-template-columns:160px 110px minmax(0,1fr) auto;gap:8px;align-items:center}.row-value{min-width:0}.row-tools{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);flex-wrap:wrap}.list-items{display:flex;flex-direction:column;gap:7px;margin-top:8px;padding-left:168px}.list-item{display:grid;grid-template-columns:34px minmax(0,1fr) 78px 90px auto;gap:7px;align-items:center}.list-item-icon{width:30px;height:30px;border:1px solid var(--line);border-radius:5px;object-fit:contain;background:#080509}.list-item .file-btn{grid-column:2/4;justify-self:start;padding:5px 8px;font-size:11px}
 .section-card-head{margin-bottom:9px}.section-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.section-meta select{width:auto;min-width:135px}.section-images,.gallery-items{display:flex;flex-direction:column;gap:8px;margin-top:10px}.section-image-row,.gallery-row{display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:8px;align-items:center}.section-image-row img,.gallery-row img{width:72px;height:72px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#080509}.two-col-settings{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end}.toggle-row{display:flex;align-items:center;gap:8px;white-space:nowrap;padding-bottom:10px}.toggle-row input{width:auto;min-height:auto}
 .preview-pane{padding:12px 16px 18px}.preview-toolbar{max-width:1500px;margin:0 auto 8px;display:flex;justify-content:flex-end}.preview-toolbar select{width:auto;min-height:34px;padding:5px 8px}.preview-wrap{max-width:1500px;margin:0 auto}.preview-wrap.phone{max-width:430px}.preview-wrap iframe{display:block;width:100%;height:calc(100vh - 150px);min-height:650px;border:1px solid var(--line);border-radius:10px;background:#080309}
@@ -18,7 +18,7 @@ body{cursor:url('../assets/Cursor1.png'),pointer}button,a,summary,.file-btn{curs
 @media(max-width:720px){.app-header{height:58px;padding:0 10px}.brand strong{font-size:14px}.brand-logo{width:36px;height:36px}.app-actions{gap:4px}.app-actions .ui-btn{padding:6px 7px;font-size:10px}.app-layout{display:block}.page-sidebar{position:static;height:auto;top:auto;border-right:0;border-bottom:1px solid var(--line)}.workspace-tabs{top:58px}.editor-pane{padding:10px}.editor-card{padding:12px}.row-top{grid-template-columns:1fr 100px}.row-value{grid-column:1/-1}.list-items{padding-left:0}.list-item{grid-template-columns:34px minmax(0,1fr) auto}.list-item .stat-input,.list-item .stat-color{grid-column:2/4}.list-item .file-btn{grid-column:2/4}.two-col-settings{grid-template-columns:1fr}.toggle-row{padding:0}.preview-pane{padding:8px}.preview-wrap iframe{height:calc(100dvh - 130px);min-height:520px}.media-line{grid-template-columns:72px minmax(0,1fr)}.image-preview{width:72px;height:72px}.advanced-grid{grid-template-columns:1fr}.section-image-row,.gallery-row{grid-template-columns:62px minmax(0,1fr) auto}.section-image-row img,.gallery-row img{width:60px;height:60px}}
 @media(max-width:460px){.brand strong{display:none}.app-actions #newProjectBtn{display:none}.row-top{grid-template-columns:1fr}.row-top select{width:100%}.list-item{grid-template-columns:1fr}.list-item-icon{display:none}.list-item .stat-input,.list-item .stat-color,.list-item .file-btn{grid-column:auto}.compact-actions{width:100%}.compact-actions .ui-btn{flex:1}.card-title-row{flex-wrap:wrap}}
 
-/* V8: preview-only editor minimiser. It does not exist in Edit mode. */
+/* This button hides editor controls while Preview is open. Edit mode does not use it. */
 .preview-chrome-toggle{
   display:none;
   position:fixed;
@@ -58,7 +58,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   body.preview-clean .preview-chrome-toggle{top:8px}
 }
 
-/* Keep row editors from ever overlapping at intermediate widths. */
+/* Give each row enough room so its fields do not overlap on smaller screens. */
 @media(max-width:1180px){
   .row-top{grid-template-columns:minmax(130px,1fr) 110px minmax(180px,1.4fr) auto}
   .list-items{padding-left:0}
@@ -70,9 +70,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   .list-item .stat-input,.list-item .stat-color,.list-item .file-btn{grid-column:2/4}
 }
 
-/* V10 — infobox editor spacing.
-   List item fields no longer inherit the row-label indent: this lets the item name
-   use the empty space to the left while preserving dedicated stat/colour controls. */
+/* Give infobox item names more room. Stats and color controls keep their own space. */
 .list-items{
   padding-left:0!important;
 }
@@ -100,7 +98,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
 }
 
 
-/* V11 — compact rich formatting for infobox values/items. */
+/* Keep the small formatting buttons tidy inside infobox fields. */
 .infobox-rich-control,.item-rich-control{min-width:0}
 .infobox-mini-toolbar{
   display:flex;
@@ -140,7 +138,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   .list-item .item-rich-control{grid-column:2}
 }
 
-/* V12 — phone editor layout. Desktop remains unchanged. */
+/* Phone editor layout. Desktop rules above stay the same. */
 .mobile-header-actions,.mobile-editor-nav,.mobile-drawer-head,.mobile-sidebar-actions,.mobile-drawer-backdrop,.mobile-return-edit{display:none}
 
 @media(max-width:760px){
@@ -220,8 +218,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   .two-col-settings{grid-template-columns:1fr}.toggle-row{padding:4px 0 0;white-space:normal;min-height:44px}
 
   .preview-chrome-toggle{display:none!important}
-  /* V21: iOS-safe mobile preview. The outer document owns the scroll instead
-     of locking the body around a separately scrolling fixed iframe. */
+  /* Let the main page handle Preview scrolling on iPhone. This avoids having two scroll areas at once. */
   body.mobile-preview-active{overflow-x:hidden!important;overflow-y:auto!important;height:auto!important;min-height:100dvh}
   body.mobile-preview-active .app-header,
   body.mobile-preview-active .mobile-editor-nav,
@@ -245,8 +242,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
 .offscreen-file-input{position:fixed!important;left:-10000px!important;top:0!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
 
 
-/* V13 — clearer infobox and portrait editing. This is intentionally scoped to
-   infobox media/list controls so the rest of the desktop/mobile editor is unchanged. */
+/* Make portrait and infobox image controls easier to use without changing other editor sections. */
 .compact-media-card{padding:10px}
 .compact-media-main{display:grid;grid-template-columns:52px minmax(0,1fr) 34px;gap:8px;align-items:center}
 .portrait-image-picker,.item-icon-picker{
@@ -316,9 +312,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
 }
 
 
-/* V14 — focused desktop editor + final infobox layout cleanup.
-   Desktop defaults to the same one-panel-at-a-time idea as mobile. The old
-   multi-panel grid is still available through Advanced editor. */
+/* On desktop, Simple mode shows one editor card at a time. Advanced mode shows all editor panels. */
 .desktop-editor-nav{display:none}
 
 @media(min-width:761px){
@@ -332,7 +326,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   .desktop-editor-nav select{width:220px;min-height:36px;padding:6px 9px}
   .desktop-editor-nav #advancedEditorToggle{white-space:nowrap}
 
-  /* Simple desktop mode: one editor card, no artificial grid-row height. */
+  /* Simple mode uses one editor card without extra empty grid space. */
   body:not(.desktop-advanced) .editor-grid{display:block;max-width:980px;margin:0 auto}
   body:not(.desktop-advanced) .editor-card[data-mobile-panel]{display:none}
   body:not(.desktop-advanced)[data-mobile-panel="article"] .editor-card[data-mobile-panel="article"],
@@ -341,7 +335,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   body:not(.desktop-advanced)[data-mobile-panel="categories"] .editor-card[data-mobile-panel="categories"]{display:block}
   body:not(.desktop-advanced) .editor-card{width:100%}
 
-  /* Advanced deliberately restores the previous all-panels desktop grid. */
+  /* Advanced mode shows the full desktop editor grid. */
   body.desktop-advanced .editor-grid{
     display:grid;max-width:1180px;margin:0 auto;
     grid-template-columns:minmax(0,1fr) minmax(340px,430px);gap:16px
@@ -349,7 +343,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   body.desktop-advanced .editor-card.wide{grid-column:1/-1}
 }
 
-/* Infobox list controls: bonus gets more room, colour gets less. */
+/* Give bonus text more room and keep the color picker narrow. */
 .item-meta-controls{justify-content:flex-start}
 .item-meta-controls .stat-input{
   width:112px!important;min-width:112px!important;max-width:112px!important
@@ -362,7 +356,7 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
 @media(max-width:760px){
   .desktop-editor-nav{display:none!important}
 
-  /* Row delete is a normal small control, not a full-width bar. */
+  /* Keep row delete buttons small instead of stretching across the row. */
   .row-top{
     grid-template-columns:minmax(0,1fr) 112px 40px!important;
     gap:8px;align-items:start
@@ -376,13 +370,13 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   }
   .row-top .row-value{grid-column:1/-1;grid-row:2}
 
-  /* Keep list metadata compact and readable on phones. */
+  /* Keep list details compact and easy to read on phones. */
   .item-meta-controls{grid-column:2!important;grid-row:2!important;display:flex!important;flex-wrap:nowrap!important;gap:6px}
   .item-meta-controls .stat-input{width:118px!important;min-width:118px!important;max-width:118px!important}
   .item-meta-controls .stat-color{width:74px!important;min-width:74px!important;max-width:74px!important}
   .item-meta-controls .item-remove{width:38px!important;min-width:38px!important;max-width:38px!important;height:44px!important;min-height:44px!important}
 
-  /* Group headers also stay compact instead of producing another wide action bar. */
+  /* Keep group headings compact instead of turning them into wide bars. */
   .group-card-head{grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important}
   .group-card-head .remove-group{width:auto!important;min-width:0!important;white-space:nowrap}
 }
@@ -401,23 +395,21 @@ body.preview-clean .preview-chrome-toggle{display:block;top:8px;right:8px;opacit
   .item-meta-controls .stat-input{width:108px!important;min-width:108px!important;max-width:108px!important}
 }
 
-/* Keep the focused-editor selector itself out of Preview/read-only mode. */
+/* Hide the Simple editor picker while Preview is open. */
 body.mode-preview .desktop-editor-nav,
 body.preview-clean .desktop-editor-nav{display:none!important}
 
-/* V15 — TFR-style square editor chrome + true two-column Advanced layout.
-   The advanced view uses independent vertical columns so a tall infobox never
-   pushes the article body down. */
+/* Advanced mode uses two separate columns. A tall infobox should not push the article editor down. */
 .editor-column{display:contents}
 
-/* Use plain text disclosure markers instead of platform/emoji triangles. */
+/* Use text arrows so the marker looks the same on different devices. */
 .advanced>summary{list-style:none;display:block;user-select:none}
 .advanced>summary::-webkit-details-marker{display:none}
 .advanced>summary::marker{content:''}
 .advanced>summary::before{content:'> ';color:var(--muted);font-family:'Electrolize',sans-serif}
 .advanced[open]>summary::before{content:'v '}
 
-/* Bring the editor chrome back toward Vector/TFR: square, flat, bordered. */
+/* Keep editor controls square, flat, and close to the TFR/Vector look. */
 .ui-btn,
 .workspace-tab,
 input,select,textarea,
@@ -467,8 +459,7 @@ input,select,textarea,
   }
 }
 
-/* On narrower desktop windows, Advanced stays usable by stacking the two
-   independent columns instead of overflowing horizontally. */
+/* On smaller desktop screens, stack the Advanced columns so they stay on-screen. */
 @media(min-width:761px) and (max-width:1180px){
   body.desktop-advanced .editor-grid{grid-template-columns:1fr;max-width:980px}
   body.desktop-advanced .editor-column-main,
@@ -482,17 +473,14 @@ input,select,textarea,
   .mobile-return-edit{border-radius:0!important}
 }
 
-/* Finish the square treatment on the compact infobox controls and preview toggle. */
+/* Keep the smaller infobox controls and Preview toggle square too. */
 .infobox-mini-toolbar button,
 .infobox-rich-editor,.item-rich-editor,
 .preview-chrome-toggle{border-radius:0!important;box-shadow:none!important}
 
-/* V16 — infobox hierarchy + desktop sidebar guarantee.
-   The infobox editor uses three visual levels from the TFR purple palette:
-   group > row > list item. Desktop keeps the project/pages sidebar visible;
-   the drawer behaviour remains phone-only. */
+/* Use three border levels to make infobox groups, rows, and list items easy to tell apart. */
 
-/* Strongest boundary: a complete infobox group such as Basic Information. */
+/* Strong border for a full infobox group, such as Basic Information. */
 .group-card{
   border:1px solid #7F4D9F!important;
   background:#0f0a11!important;
@@ -506,7 +494,7 @@ input,select,textarea,
   background:#100a12!important;
 }
 
-/* Middle boundary: individual fields/rows within a group. */
+/* Medium border for a field or row inside a group. */
 .rows-wrap{background:#0c080e}
 .row-editor{
   border-top:1px solid #583465!important;
@@ -519,7 +507,7 @@ input,select,textarea,
   background:#170f1b;
 }
 
-/* Lowest boundary: entries inside an Icon / list row. */
+/* Light border for items inside an Icon / list row. */
 .list-items{
   border-top:1px solid #34203b;
   padding-top:8px;
@@ -535,8 +523,7 @@ input,select,textarea,
   padding-top:11px!important;
 }
 
-/* Keep the compact controls visually grouped without giving every control the
-   same emphasis as its containing row. */
+/* Keep small controls grouped together without making them as bold as the full row. */
 .item-meta-controls{padding-top:1px}
 .item-meta-controls .stat-input,
 .item-meta-controls .stat-color,
@@ -546,7 +533,7 @@ input,select,textarea,
 }
 .item-rich-editor,.infobox-rich-editor{border-color:#4f305a!important}
 
-/* Desktop/tablet layout explicitly retains the always-present page list. */
+/* Base desktop page-list layout. The Pages drawer section below takes over in the final layout. */
 @media(min-width:761px){
   .app-layout{
     display:grid!important;
@@ -572,7 +559,7 @@ input,select,textarea,
   .mobile-drawer-backdrop{display:none!important}
 }
 
-/* Phone hierarchy uses the same three levels but avoids large solid blocks. */
+/* Phones use the same group, row, and item levels with lighter backgrounds. */
 @media(max-width:760px){
   .group-card{border-color:#7F4D9F!important}
   .group-card-head{background:#241529!important}
@@ -583,10 +570,7 @@ input,select,textarea,
 }
 
 
-/* V17 — one consistent Pages drawer on desktop and mobile.
-   The page list is off-canvas at every editor width so it never permanently
-   consumes article editing space. The drawer is anchored to the viewport,
-   not to the document scroll position. */
+/* Pages uses the same slide-out drawer on desktop and mobile. It stays fixed to the screen and does not take up editor space while closed. */
 .pages-plus{width:38px!important;min-width:38px!important;padding:0!important;font-size:20px!important;line-height:1}
 .app-layout{display:block!important;grid-template-columns:none!important;min-width:0!important}
 .workspace{width:100%!important;min-width:0!important}
@@ -637,8 +621,7 @@ body.mobile-pages-open{overflow:hidden}
   .mobile-sidebar-actions{display:grid!important}
 }
 
-/* V17 — every icon-only remove control stays compact on phones. Earlier
-   responsive rules made a few × buttons span an entire row. */
+/* Keep small remove buttons at button size on phones instead of letting them fill a row. */
 @media(max-width:760px){
   .row-top .row-remove,
   .item-meta-controls .item-remove,
@@ -667,7 +650,7 @@ body.mobile-pages-open{overflow:hidden}
 }
 
 
-/* V18 — clearer Pages navigation + restored mobile branding. */
+/* Pages navigation and the shorter mobile brand text. */
 .brand-mobile-text{display:none}
 .pages-tab{display:inline-flex;align-items:center;justify-content:center}
 .pages-tab.drawer-active{background:#1a101d!important;color:var(--text)!important;border-color:#7F4D9F!important}
@@ -689,7 +672,7 @@ body.mobile-pages-open{overflow:hidden}
 }
 
 
-/* V19 — compact sound/music controls on desktop and phones. */
+/* Small sound and music buttons for desktop and mobile. */
 .media-toggle{
   position:relative!important;
   display:inline-flex!important;
@@ -742,7 +725,7 @@ body.mobile-pages-open{overflow:hidden}
   .mobile-header-actions .mobile-plus{width:34px!important;min-width:34px!important}
 }
 
-/* V24 — infobox row types, built-in icon library, and country route editor. */
+/* Infobox row types, the built-in icon picker, and the country paths editor. */
 .country-paths-editor{
   margin:0 0 16px;
   border:1px solid #7F4D9F;
@@ -798,7 +781,7 @@ body.mobile-pages-open{overflow:hidden}
 .route-flag-picker .image-picker-placeholder{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;color:#8f8293}
 .route-flag-picker .image-picker-plus{position:absolute;right:1px;bottom:0;width:17px;height:17px;display:grid;place-items:center;border:1px solid #7F4D9F;background:#100a12;color:#fff;font-size:13px;line-height:1}
 
-/* Optional icon before an infobox row label. */
+/* Show an optional icon before an infobox row label. */
 .row-label-wrap{
   min-width:0;
   display:grid;
@@ -827,7 +810,7 @@ body.mobile-pages-open{overflow:hidden}
 .row-icon-picker .image-picker-plus{position:absolute;right:0;bottom:0;width:14px;height:14px;display:grid;place-items:center;border:1px solid #7F4D9F;background:#100a12;color:#fff;font-size:11px;line-height:1}
 .text-value-color{width:78px!important;min-width:78px!important;min-height:27px!important;padding:2px 5px!important;font-size:11px!important}
 
-/* A normal icon/list item is deliberately simpler than a Trait. */
+/* Normal Icon / list rows use simpler controls than Trait rows. */
 .plain-list-item{
   grid-template-columns:42px minmax(0,1fr) 36px!important;
   align-items:start!important;
@@ -852,7 +835,7 @@ body.mobile-pages-open{overflow:hidden}
 .trait-item .stat-color{min-width:76px!important;width:76px!important}
 .row-tools .add-trait{border-color:#684078}
 
-/* Searchable built-in icon chooser. */
+/* Search box and grid for the built-in icon picker. */
 .icon-library-modal{
   width:min(900px,96vw)!important;
   max-height:min(82dvh,760px);
@@ -949,8 +932,8 @@ body.mobile-pages-open{overflow:hidden}
 
 
 
-/* V26 — Traits are titles with one or more icon/text/value bonus lines. */
-.trait-item-v26{
+/* A Trait has a title and one or more bonus lines with an icon, text, and value. */
+.trait-item{
   display:block;
   padding:10px 0 12px;
   border-bottom:1px solid #472b54;
@@ -1014,7 +997,7 @@ body.mobile-pages-open{overflow:hidden}
 
 @media(max-width:760px){
   .row-label-wrap.no-icon{grid-template-columns:minmax(0,1fr)!important}
-  .trait-item-v26{padding:9px 0 11px!important}
+  .trait-item{padding:9px 0 11px!important}
   .trait-head-editor{grid-template-columns:minmax(0,1fr) 40px!important}
   .trait-bonus-editor{
     grid-template-columns:42px minmax(0,1fr) 40px!important;
@@ -1041,7 +1024,7 @@ body.mobile-pages-open{overflow:hidden}
 }
 
 
-/* PWA shell */
+/* PWA splash screen and status message. */
 .pwa-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#080309;opacity:1;transition:opacity .18s linear;pointer-events:none}
 .pwa-splash[hidden]{display:none}
 .pwa-splash.is-hiding{opacity:0}
@@ -1049,9 +1032,7 @@ body.mobile-pages-open{overflow:hidden}
 .pwa-status{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));z-index:9999;transform:translateX(-50%);max-width:min(92vw,520px);border:1px solid #7F4D9F;background:#100a12;color:#fff;padding:8px 12px;font-size:13px;box-shadow:0 8px 24px #0009}
 @media(max-width:760px){.pwa-status{font-size:12px;bottom:max(10px,env(safe-area-inset-bottom))}.pwa-splash img{width:min(58vw,220px)}}
 
-/* V29 — iOS standalone/PWA safe areas.
-   These offsets are deliberately scoped to installed standalone mode so
-   ordinary Safari/mobile web keeps its existing layout. */
+/* Use iPhone safe-area spacing only when the site is installed as a PWA. Normal Safari keeps its usual layout. */
 @media(max-width:760px){
   html.pwa-standalone .app-header{
     box-sizing:border-box!important;
@@ -1074,9 +1055,7 @@ body.mobile-pages-open{overflow:hidden}
     padding-bottom:calc(env(safe-area-inset-bottom) + 14px)!important;
   }
 
-  /* Full-screen mobile Preview hides the editor header, so give the preview
-     itself the safe-area inset instead of letting the iframe begin under the
-     iOS status bar / Dynamic Island. */
+  /* Full-screen Preview hides the app header. Add safe-area space here so content does not sit under the iPhone status area. */
   html.pwa-standalone body.mobile-preview-active .preview-pane{
     box-sizing:border-box!important;
     padding-top:env(safe-area-inset-top)!important;
@@ -1106,7 +1085,7 @@ body.mobile-pages-open{overflow:hidden}
   }
 }
 
-/* V30 — GFX Maker link + site disclaimer. */
+/* GFX Maker link and the site disclaimer window. */
 .workspace-tab.gfx-maker-link{display:inline-flex;align-items:center;text-decoration:none}
 .mobile-sidebar-actions .gfx-maker-mobile-link{
   grid-column:1/-1;
@@ -1125,7 +1104,7 @@ body.mobile-pages-open{overflow:hidden}
 .site-disclaimer-card p{color:var(--muted);line-height:1.55}
 .site-disclaimer-card strong{color:var(--text)}
 
-/* V34 — mobile-only export menu. Desktop Export HTML remains unchanged. */
+/* Phones use an export menu. Desktop keeps the normal Export HTML button. */
 .mobile-export-menu{display:none}
 @media(max-width:760px){
   .mobile-export-menu{display:block;grid-column:1/-1;position:relative}
@@ -1136,17 +1115,17 @@ body.mobile-pages-open{overflow:hidden}
   .mobile-export-options .ui-btn{width:100%;min-height:48px;text-align:center}
 }
 
-/* V38 — low-latency reversible swipe navigation + readable mobile infobox rows. */
+/* Phone swipe styles and the mobile infobox row layout. */
 @media(max-width:760px){
   html,body{overscroll-behavior-x:none}
 
-  /* Drawer follows the thumb rather than snapping at touchend. */
+  /* Move the Pages drawer with the finger during a swipe. */
   body.mobile-pages-gesture{overflow:hidden}
   .page-sidebar.mobile-gesture-dragging{transition:none!important;will-change:transform;-webkit-backface-visibility:hidden;backface-visibility:hidden}
   .mobile-drawer-backdrop.mobile-gesture-visible{display:block!important}
   .mobile-drawer-backdrop.mobile-gesture-dragging{transition:none!important;will-change:opacity}
 
-  /* Interactive Editor -> Preview overlay. */
+  /* While swiping from Edit to Preview, Preview slides over the editor. */
   body.mobile-mode-gesture{overflow:hidden!important}
   body.mobile-gesture-to-preview #previewPane{
     display:block!important;
@@ -1187,7 +1166,7 @@ body.mobile-pages-open{overflow:hidden}
     background:#080309!important;
   }
 
-  /* Preview -> Editor: reveal the real editor underneath the moving Preview. */
+  /* While swiping from Preview to Edit, move Preview so the editor shows underneath. */
   body.mobile-gesture-from-preview .app-header{display:flex!important;position:fixed!important;left:0;right:0;top:0;z-index:3000!important}
   body.mobile-gesture-from-preview .mobile-editor-nav{display:block!important;position:fixed!important;left:0;right:0;top:56px;z-index:2990!important}
   body.mobile-gesture-from-preview #editorPane{
@@ -1217,9 +1196,7 @@ body.mobile-pages-open{overflow:hidden}
   }
   body.mobile-gesture-from-preview #mobileReturnEdit{display:none!important}
 
-  /* Mobile row header: the label gets a complete line to itself. The optional
-     row icon moves to the control line below it, so it can never squeeze the
-     label down to a couple of visible characters. */
+  /* On phones, put the row label on its own line. The icon and other controls go below it so they cannot squeeze the text field. */
   .row-top{
     grid-template-columns:44px minmax(0,1fr) 44px!important;
     gap:8px!important;
@@ -1287,4 +1264,16 @@ body.mobile-pages-open{overflow:hidden}
   html.pwa-standalone body.mobile-gesture-from-preview #editorPane{
     top:calc(106px + env(safe-area-inset-top))!important;
   }
+}
+
+/* Put Disclaimer in the right menus and keep the desktop Advanced button beside the editor picker. */
+@media(min-width:761px){
+  .desktop-editor-nav{justify-content:flex-start}
+  .desktop-editor-nav label{flex:0 0 auto}
+  body.desktop-advanced .desktop-editor-nav label{display:none}
+}
+.mobile-sidebar-actions .mobile-disclaimer-btn{
+  grid-column:1/-1;
+  width:100%;
+  min-height:52px;
 }

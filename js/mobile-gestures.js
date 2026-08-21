@@ -6,7 +6,7 @@
   const PAGE_OPEN_ZONE_RATIO = 0.92;
   const LOCK_DISTANCE = 10;
   const COMMIT_RATIO = 0.12;
-  const FAST_SWIPE_VELOCITY = 0.20; // px/ms
+  const FAST_SWIPE_VELOCITY = 0.20; // pixels per millisecond
   const FAST_SWIPE_MIN_PROGRESS = 0.03;
   const MAX_SETTLE_MS = 155;
 
@@ -44,8 +44,7 @@
   function nextFrame(){ return new Promise(resolve=>requestAnimationFrame(resolve)); }
 
   function scheduleVisual(fn){
-    // Touchmove is already paced by WebKit. Applying compositor-only transforms
-    // immediately avoids adding an extra frame of latency to slow drags.
+    // Safari already sends touch updates at a steady pace. Move the screen right away so the drag does not feel one frame behind.
     pendingVisual=null;
     if(visualFrame){ cancelAnimationFrame(visualFrame); visualFrame=0; }
     fn();
@@ -87,7 +86,7 @@
     if(!sidebar || !backdrop) return;
     const p=clamp(amount);
     const x=-width*(1-p);
-    // The normal drawer rules use !important, so the live gesture must too.
+    // The normal drawer CSS uses !important, so the drag style needs it too.
     sidebar.style.setProperty('transform',`translate3d(${x}px,0,0)`,'important');
     backdrop.style.setProperty('opacity',String(.58*p),'important');
   }
@@ -159,8 +158,7 @@
   function applyModeProgress(kind,progress,width){
     if(!previewPane) return;
     const p=clamp(progress);
-    // Only move the foreground surface. Moving both full application trees was
-    // unnecessarily expensive on iOS and made slow drags look low-framerate.
+    // Move only the screen on top. Moving both full screens at once made slow iPhone swipes look choppy.
     const x=kind==='to-preview' ? width*(1-p) : width*p;
     previewPane.style.setProperty('transform',`translate3d(${x}px,0,0)`,'important');
   }
@@ -239,14 +237,13 @@
 
     if(drawerOpen){
       const onBackdrop=e.target instanceof Element && !!e.target.closest('#mobileDrawerBackdrop');
-      // Backdrop/edges are always draggable. Keep form controls inside the panel
-      // usable, but any non-control area of the drawer can start the close drag.
+      // A swipe can start on the backdrop or empty drawer space. Form controls still need normal taps and typing.
       if(!onBackdrop && isInteractive(e.target)) return;
       gesture={kind:null,drawerOpen:true,x:t.clientX,y:t.clientY,startedAt:performance.now(),started:false,cancelled:false,progress:1};
       return;
     }
 
-    if(body.classList.contains('mobile-preview-active')) return; // iframe owns Preview -> Edit.
+    if(body.classList.contains('mobile-preview-active')) return; // Preview handles its own swipe back to Edit.
     if(isInteractive(e.target)) return;
 
     const width=viewportWidth();
@@ -319,13 +316,11 @@
     else if(g.kind==='to-preview') settleMode(g,'to-preview',false);
   },{passive:true});
 
-  // Preview is a same-origin srcdoc iframe. Dragging right moves the Preview
-  // surface itself, so the editor is visible underneath and the gesture can be
-  // reversed before release.
+  // Preview lives inside the page frame. Moving it right shows the editor below and still lets the user reverse the swipe.
   function wirePreview(){
     const doc=previewFrame?.contentDocument;
-    if(!doc || doc.__tfrGestureV38) return;
-    doc.__tfrGestureV38=true;
+    if(!doc || doc.__tfrGestureWired) return;
+    doc.__tfrGestureWired=true;
     let pg=null;
 
     function blocked(target){

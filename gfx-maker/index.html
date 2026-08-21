@@ -167,7 +167,18 @@
 
   <dialog id="iconDialog" class="icon-dialog">
     <form method="dialog" class="dialog-card">
-      <div class="dialog-head"><strong id="iconDialogTitle">Choose icon</strong><button class="ui-btn" value="cancel">×</button></div>
+      <div class="dialog-head">
+        <strong id="iconDialogTitle">Choose icon</strong>
+        <div class="dialog-head-actions">
+          <button id="iconNoIconBtn" class="ui-btn subtle icon-dialog-action" type="button">No icon</button>
+          <label class="ui-btn icon-upload-btn" title="Upload icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v5h14v-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+            <span>Upload</span>
+            <input id="iconUploadInput" type="file" accept="image/*">
+          </label>
+          <button class="ui-btn icon-dialog-close" value="cancel" aria-label="Close icon picker">×</button>
+        </div>
+      </div>
       <input id="iconSearch" class="icon-search" type="search" placeholder="Search icons…" autocomplete="off">
       <div class="icon-grid" id="iconGrid"></div>
     </form>
