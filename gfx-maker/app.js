@@ -167,7 +167,10 @@ async function dbSet(key,val){ const db=await openDB(); return new Promise((res,
 async function dbDelete(key){ const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).delete(key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);}); }
 
 function gifDurationMsFromBytes(bytes){let total=0,frames=0;if(bytes)for(let i=0;i+7<bytes.length;i++)if(bytes[i]===0x21&&bytes[i+1]===0xF9&&bytes[i+2]===0x04){let delay=(bytes[i+4]|(bytes[i+5]<<8))*10;if(delay<20)delay=100;total+=delay;frames++}return Math.max(1200,Math.min(6000,frames&&total?total:3000))}
-async function noteAssetAnimation(key,blob){if(blob?.type?.toLowerCase()==='image/gif'){animatedAssets.add(key);try{animatedDurations.set(key,gifDurationMsFromBytes(new Uint8Array(await blob.arrayBuffer())))}catch{animatedDurations.set(key,3000)}}else{animatedAssets.delete(key);animatedDurations.delete(key)}ensureAnimationLoop()}
+function hasGifHeader(bytes){return bytes?.length>=6&&bytes[0]===71&&bytes[1]===73&&bytes[2]===70&&bytes[3]===56&&(bytes[4]===55||bytes[4]===57)&&bytes[5]===97}
+async function gifBytesFromBlob(blob){try{const bytes=new Uint8Array(await blob.arrayBuffer());return hasGifHeader(bytes)?bytes:null}catch{return null}}
+function looksLikeImageFile(file){return !!file&&(file.type?.startsWith('image/')||/\.(?:png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(file.name||''))}
+async function noteAssetAnimation(key,blob){const gifByType=blob?.type?.toLowerCase()==='image/gif',gifByName=/\.gif$/i.test(blob?.name||''),bytes=gifByType||gifByName?await gifBytesFromBlob(blob):null;if(bytes){animatedAssets.add(key);animatedDurations.set(key,gifDurationMsFromBytes(bytes))}else{animatedAssets.delete(key);animatedDurations.delete(key)}ensureAnimationLoop()}
 function setObjectUrl(key, blob){
   if(objectUrls.has(key)) URL.revokeObjectURL(objectUrls.get(key));
   const url=URL.createObjectURL(blob); objectUrls.set(key,url); assetUrls[key]=url;
@@ -226,7 +229,7 @@ function updateOutputs(){
 
 async function handleAssetInput(key, input){
   const file=input.files?.[0]; if(!file) return;
-  if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); input.value=''; return; }
+  if(!looksLikeImageFile(file)){ alert('Please choose an image file.'); input.value=''; return; }
   try{ await dbSet(key,file); setObjectUrl(key,file); await noteAssetAnimation(key,file); imageCache.clear(); updateThumbs(); scheduleRender(); }
   catch(e){ alert('Could not store that image locally.'); console.error(e); }
   input.value='';
@@ -480,7 +483,7 @@ async function chooseNoIcon(mode){
 }
 async function handleCustomIconInput(input){
   const file=input.files?.[0],mode=iconMode;input.value='';if(!file)return;
-  if(!file.type.startsWith('image/')){alert('Please choose an image file.');return}
+  if(!looksLikeImageFile(file)){alert('Please choose an image file.');return}
   try{
     await dbSet(CUSTOM_ICON_DB_KEYS[mode],file);setCustomIconObjectUrl(mode,file);await noteAssetAnimation(mode+'Icon',file);state.country[mode+'IconMode']='custom';state.country[mode+'IconName']=file.name||'Custom icon';saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
   }catch(e){alert('Could not store that image locally.');console.error(e)}
