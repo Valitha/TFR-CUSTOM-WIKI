@@ -1136,7 +1136,7 @@ body.mobile-pages-open{overflow:hidden}
   .mobile-export-options .ui-btn{width:100%;min-height:48px;text-align:center}
 }
 
-/* V36 — interactive mobile swipe navigation + readable infobox row headers. */
+/* V37 — smooth reversible swipe navigation + readable mobile infobox rows. */
 @media(max-width:760px){
   html,body{overscroll-behavior-x:none}
 
@@ -1211,49 +1211,55 @@ body.mobile-pages-open{overflow:hidden}
   }
   body.mobile-gesture-from-preview #mobileReturnEdit{display:none!important}
 
-  /* Put optional row icons BEFORE the label and give the label a full row.
-     This prevents short, unreadable labels on narrow phones. */
-  .row-top .row-label-wrap{
+  /* Mobile row header: the label gets a complete line to itself. The optional
+     row icon moves to the control line below it, so it can never squeeze the
+     label down to a couple of visible characters. */
+  .row-top{
+    grid-template-columns:44px minmax(0,1fr) 44px!important;
+    gap:8px!important;
+    align-items:start!important;
+  }
+  .row-top .row-label-wrap,
+  .row-top .row-label-wrap.no-icon{
+    display:contents!important;
+  }
+  .row-top .row-label{
     grid-column:1/-1!important;
     grid-row:1!important;
     width:100%!important;
     min-width:0!important;
-    grid-template-columns:40px minmax(0,1fr)!important;
-    gap:8px!important;
   }
-  .row-top .row-label-wrap .row-icon-picker{
+  .row-top .row-icon-picker{
     grid-column:1!important;
-    grid-row:1!important;
-    width:40px!important;
-    min-width:40px!important;
+    grid-row:2!important;
+    width:44px!important;
+    min-width:44px!important;
     height:44px!important;
   }
-  .row-top .row-label-wrap:not(.no-icon) .row-label{
-    grid-column:2!important;
-    grid-row:1!important;
-    width:100%!important;
-    min-width:0!important;
-  }
-  .row-top .row-label-wrap.no-icon{
-    grid-template-columns:minmax(0,1fr)!important;
-  }
-  .row-top .row-label-wrap.no-icon .row-label{
-    grid-column:1!important;
-    grid-row:1!important;
-    width:100%!important;
-  }
   .row-top .row-type{
-    grid-column:1/3!important;
+    grid-column:2!important;
     grid-row:2!important;
     width:100%!important;
+    min-width:0!important;
   }
   .row-top .row-remove{
     grid-column:3!important;
     grid-row:2!important;
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    padding:0!important;
   }
   .row-top .row-value{
     grid-column:1/-1!important;
     grid-row:3!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .row-top .row-label-wrap.no-icon + .row-type{
+    grid-column:1/3!important;
   }
 }
 
