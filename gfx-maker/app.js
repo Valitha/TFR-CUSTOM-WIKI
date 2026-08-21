@@ -27,6 +27,10 @@ const DEFAULTS = {
     election: 'Next election: Unknown',
     focusText: 'Unknown National Focus',
     focusProgress: 35,
+    powerBalancePercent: '100.0%',
+    powerBalanceLevels: '1/1',
+    economyText: 'Capitalist Economy',
+    governmentText: 'Semi Presidential System',
     textSizes: {
       country: 16,
       faction: 14,
@@ -34,6 +38,8 @@ const DEFAULTS = {
       party: 15,
       ideology: 15,
       election: 14,
+      economy: 12,
+      government: 12,
       focus: 14
     },
     transforms: {
@@ -52,7 +58,13 @@ const DEFAULTS = {
     ideologyIconMode: 'builtin',
     factionIcon: '../assets/icon-library/factions/GFX_NATO_Member.webp',
     factionIconName: 'NATO Member',
-    factionIconMode: 'builtin'
+    factionIconMode: 'builtin',
+    economyIcon: './assets/icon-library/economy/ZZZ_capitalist_economy.png',
+    economyIconName: 'Capitalist Economy',
+    economyIconMode: 'builtin',
+    governmentIcon: './assets/icon-library/government/ZZZ_semi_presidential_system.png',
+    governmentIconName: 'Semi Presidential System',
+    governmentIconMode: 'builtin'
   },
   event: {
     title: 'Major Event',
@@ -93,11 +105,16 @@ const assetUrls = {
   focus: placeholder('focus_unknown.png'),
   event: placeholder('major_news.png'),
   news: placeholder('local_news.png'),
-  super: placeholder('super_event.png')
+  super: placeholder('super_event.png'),
+  spirit1: placeholder('focus_unknown.png'),
+  spirit2: placeholder('focus_unknown.png'),
+  spirit3: placeholder('focus_unknown.png'),
+  spirit4: placeholder('focus_unknown.png')
 };
 const objectUrls = new Map();
 const customIconUrls = new Map();
-const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon'};
+const COUNTRY_ICON_MODES = ['ideology','faction','economy','government'];
+const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon', economy:'custom-economy-icon', government:'custom-government-icon'};
 
 const SOUND_PREF_KEY = 'tfr-sound-muted-v1';
 const SOUND_URLS = {
@@ -173,7 +190,11 @@ async function dbDelete(key){ const db=await openDB(); return new Promise((res,r
 function hasGifHeader(bytes){return bytes?.length>=6&&bytes[0]===71&&bytes[1]===73&&bytes[2]===70&&bytes[3]===56&&(bytes[4]===55||bytes[4]===57)&&bytes[5]===97}
 async function gifBytesFromBlob(blob){try{const head=new Uint8Array(await blob.slice(0,6).arrayBuffer());if(!hasGifHeader(head))return null;return new Uint8Array(await blob.arrayBuffer())}catch{return null}}
 function looksLikeImageFile(file){return !!file&&(file.type?.startsWith('image/')||/\.(?:png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(file.name||''))}
-function animatedSourceForKey(key){if(Object.prototype.hasOwnProperty.call(assetUrls,key))return assetUrls[key]||'';if(key==='ideologyIcon')return customIconUrls.get('ideology')||'';if(key==='factionIcon')return customIconUrls.get('faction')||'';return ''}
+function animatedSourceForKey(key){
+  if(Object.prototype.hasOwnProperty.call(assetUrls,key))return assetUrls[key]||'';
+  if(key.endsWith('Icon'))return customIconUrls.get(key.slice(0,-4))||'';
+  return '';
+}
 
 function readGifSubBlocks(bytes,pos){
   const parts=[];let total=0;
@@ -298,7 +319,7 @@ async function restoreAssets(){
   for(const key of Object.keys(assetUrls)){
     try{ const blob=await dbGet(key); if(blob){setObjectUrl(key,blob);await noteAssetAnimation(key,blob)} }catch(e){ console.warn('asset restore failed',key,e); }
   }
-  for(const mode of ['ideology','faction']){
+  for(const mode of COUNTRY_ICON_MODES){
     if(countryIconMode(mode)!=='custom')continue;
     try{
       const blob=await dbGet(CUSTOM_ICON_DB_KEYS[mode]);
@@ -345,7 +366,8 @@ async function handleAssetInput(key, input){
 
 const assetDefaults={
   flag:placeholder('flag_eu.png'), leader:placeholder('leader_unknown.png'), focus:placeholder('focus_unknown.png'),
-  event:placeholder('major_news.png'), news:placeholder('local_news.png'), super:placeholder('super_event.png')
+  event:placeholder('major_news.png'), news:placeholder('local_news.png'), super:placeholder('super_event.png'),
+  spirit1:placeholder('focus_unknown.png'), spirit2:placeholder('focus_unknown.png'), spirit3:placeholder('focus_unknown.png'), spirit4:placeholder('focus_unknown.png')
 };
 const transformPathByAsset={flag:'country.transforms.flag',leader:'country.transforms.leader',focus:'country.transforms.focus',event:'event.transform',news:'news.transform',super:'super.transform'};
 function resetAssetTransform(key){
@@ -359,16 +381,17 @@ async function clearAsset(key){
 }
 
 function updateThumbs(){
-  const map={flag:'flagThumb',leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb'};
+  const map={leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb',spirit1:'spirit1Thumb',spirit2:'spirit2Thumb',spirit3:'spirit3Thumb',spirit4:'spirit4Thumb'};
   for(const [key,id] of Object.entries(map)){
-    $('#'+id).src=assetUrls[key];
+    const img=$('#'+id);if(img)img.src=assetUrls[key];
     const clear=$(`[data-clear-asset="${key}"]`); if(clear)clear.hidden=!objectUrls.has(key);
   }
-  for(const mode of ['ideology','faction']){
-    const img=$('#'+mode+'Thumb'),name=$('#'+mode+'Name'),button=$('#choose'+(mode==='ideology'?'Ideology':'Faction')),src=countryIconSrc(mode);
-    if(src){img.src=src;img.hidden=false}else{img.removeAttribute('src');img.hidden=true}
+  const labels={ideology:'Ideology',faction:'Faction',economy:'Economy',government:'Government'};
+  for(const mode of COUNTRY_ICON_MODES){
+    const img=$('#'+mode+'Thumb'),name=$('#'+mode+'Name'),button=$('#choose'+labels[mode]),src=countryIconSrc(mode);
+    if(img){if(src){img.src=src;img.hidden=false}else{img.removeAttribute('src');img.hidden=true}}
     button?.classList.toggle('no-icon',!src);
-    name.textContent=countryIconMode(mode)==='none'?'No icon':(state.country[mode+'IconName']||(mode==='ideology'?'Selected ideology':'Selected faction'));
+    if(name)name.textContent=countryIconMode(mode)==='none'?'No icon':(state.country[mode+'IconName']||`Selected ${mode}`);
   }
 }
 
@@ -424,66 +447,116 @@ function setCanvas(w,h,title,scale=1){
 }
 
 async function renderCountry(seq){
-  setCanvas(524,248,'Country',2);
-  ctx.clearRect(0,0,524,248);
-  // The CSS background is only for the screen. Fill the canvas with black so exported PNGs keep the black panel.
-  ctx.fillStyle='#000';
-  ctx.fillRect(0,0,524,248);
+  setCanvas(719,394,'Country',2);
+  ctx.clearRect(0,0,719,394);
+  ctx.fillStyle='#000';ctx.fillRect(0,0,719,394);
   const imgs=await Promise.all([
-    loadImage(template('diplo_upper_win_bg.png')),loadImage(template('diplo_top_bg_diplo_tab.png')),loadImage(template('Leader_Background.png')),loadImage(template('diplo_leader_frame.png')),loadImage(template('flag_overlay.png')),loadImage(template('pol_goal_progress_frame.png')),loadImage(template('pol_goal_progress.png')),loadImage(template('diplo_goal_button.png')),loadImage(template('bck_shadow.png')),loadImage(template('pol_piechart_overlay.png')),
-    loadAssetImage('flag',assetUrls.flag),loadAssetImage('leader',assetUrls.leader),loadAssetImage('focus',assetUrls.focus),loadAssetImage('ideologyIcon',countryIconSrc('ideology')),loadAssetImage('factionIcon',countryIconSrc('faction'))
+    loadImage('./assets/country/pol_view_bg_new.png'),
+    loadImage('./assets/country/pol_leader_frame.png'),
+    loadImage('./assets/country/pol_goal_bg.png'),
+    loadImage('./assets/country/pol_goal_progress_bg.png'),
+    loadImage('./assets/country/pol_goal_progress_frame.png'),
+    loadImage('./assets/country/pol_goal_progress.png'),
+    loadImage('./assets/country/pol_piechart_overlay_63x63.png'),
+    loadImage('./assets/country/leading_pol_party_bg.png'),
+    loadImage('./assets/country/pol_party_colour_bg.png'),
+    loadImage('./assets/country/icon_occupied_territories.png'),
+    loadImage('./assets/country/icon_exiled_governments.png'),
+    loadImage('./assets/country/icon_manage_subjects.png'),
+    loadImage(template('closebutton_small.png')),
+    loadAssetImage('leader',assetUrls.leader),
+    loadAssetImage('focus',assetUrls.focus),
+    loadAssetImage('ideologyIcon',countryIconSrc('ideology')),
+    loadAssetImage('factionIcon',countryIconSrc('faction')),
+    loadAssetImage('economyIcon',countryIconSrc('economy')),
+    loadAssetImage('governmentIcon',countryIconSrc('government')),
+    loadAssetImage('spirit1',assetUrls.spirit1),
+    loadAssetImage('spirit2',assetUrls.spirit2),
+    loadAssetImage('spirit3',assetUrls.spirit3),
+    loadAssetImage('spirit4',assetUrls.spirit4)
   ]); if(seq!==renderSeq)return;
-  const [upper,tab,leaderBg,leaderFrame,flagOverlay,progressFrame,progress,goalButton,shadow,pieOverlay,flag,leader,focus,ideology,faction]=imgs;
+  const [panel,leaderFrame,goalBg,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,closeBtn,leader,focus,ideology,faction,economy,government,...spirits]=imgs;
 
-  if(leaderBg)ctx.drawImage(leaderBg,7,79,120,160);
-  drawCoverTransform(leader,7,79,120,160,state.country.transforms?.leader);
-  if(leaderFrame)ctx.drawImage(leaderFrame,0,70);
+  if(panel)ctx.drawImage(panel,0,0,719,394);
 
-  drawCoverTransform(flag,22,15,90,55,state.country.transforms?.flag);
-  if(flagOverlay)ctx.drawImage(flagOverlay,8.5,6.75,117,71.5);
+  drawCoverTransform(leader,9,12,160,213,state.country.transforms?.leader);
+  if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
 
-  if(upper)ctx.drawImage(upper,125,4);
-  if(tab)ctx.drawImage(tab,125,76);
+  if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
+  drawCoverTransform(focus,198,27,76,76,state.country.transforms?.focus);
+  if(closeBtn)ctx.drawImage(closeBtn,519,14,26,26);
+  if(progressBg)ctx.drawImage(progressBg,292,92,237,6);
+  if(progress){
+    const amount=Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100;
+    const width=Math.round(237*amount);
+    if(width>0)ctx.drawImage(progress,0,0,width,Math.min(6,progress.height||6),292,92,width,6);
+  }
+  if(progressFrame)ctx.drawImage(progressFrame,291,91,239,8);
 
-  drawCentered(ideology,177,42,1,70,70);
-  drawCentered(faction,485,40,1,72,72);
+  drawCentered(faction,632,62,1,86,86);
+  drawCentered(ideology,224,166,1,76,76);
+  const spiritX=[312,380,448,516];
+  spirits.forEach((spirit,index)=>drawCentered(spirit,spiritX[index],166,1,62,62));
 
-  const pieCx=183,pieCy=122,pieR=31.5;
-  if(shadow)drawCentered(shadow,pieCx,pieCy,.6);
+  drawCentered(economy,47,319,1,68,68);
+  drawCentered(faction,137,322,1,68,68);
+  drawCentered(government,212,334,1,68,68);
+
   const slices=(state.country.ideologySlices||[]).filter(x=>Number(x.value)>0);
   const total=slices.reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0)||1;
+  const pieCx=441,pieCy=335,pieR=31.5;
   let angle=-Math.PI/2;
   for(const slice of slices){
     const amount=Math.max(0,Number(slice.value)||0)/total;
-    ctx.beginPath();ctx.moveTo(pieCx,pieCy);ctx.arc(pieCx,pieCy,pieR,angle,angle+Math.PI*2*amount);ctx.closePath();
-    ctx.fillStyle=slice.color||'#777';ctx.fill();angle+=Math.PI*2*amount;
+    ctx.beginPath();ctx.moveTo(pieCx,pieCy);ctx.arc(pieCx,pieCy,pieR,angle,angle+Math.PI*2*amount);ctx.closePath();ctx.fillStyle=slice.color||'#777';ctx.fill();angle+=Math.PI*2*amount;
   }
-  if(pieOverlay)drawCentered(pieOverlay,pieCx,pieCy,1);
+  if(pieOverlay)ctx.drawImage(pieOverlay,396,292,90,87);
 
-  if(goalButton)ctx.drawImage(goalButton,230.5,170,285,64);
-  drawCenteredTransform(focus,182,202,.9,92,94,state.country.transforms?.focus);
-  if(progressFrame)ctx.drawImage(progressFrame,253.5,216);
-  if(progress){
-    const pw=Math.round(237*Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100);
-    if(pw>0)ctx.drawImage(progress,0,0,pw,18,255,217,pw,6);
-  }
-
-  ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
   const ts=state.country.textSizes||DEFAULTS.country.textSizes;
-  ctx.fillStyle='#d7d7d7';ctx.textAlign='left';ctx.textBaseline='top';
-  // Leave room for the faction icon on the right side of the top text.
-  let size=fitText(state.country.country,210,Number(ts.country)||16,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.country,230,8);
-  size=fitText(state.country.faction,210,Number(ts.faction)||14,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.faction,230,28);
-  size=fitText(state.country.leader,210,Number(ts.leader)||15,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.leader,230,48);
-  ctx.font=textFont(fitText(state.country.party,270,Number(ts.party)||15,8,true),true);ctx.fillText(state.country.party,238,91);
-  ctx.font=textFont(fitText(state.country.ideologyText,270,Number(ts.ideology)||15,8,true),true);ctx.fillText(state.country.ideologyText,238,113);
-  ctx.font=textFont(fitText(state.country.election,270,Number(ts.election)||14,8,true),true);ctx.fillStyle='#e7b676';ctx.fillText(state.country.election,238,135);
+  ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
+  ctx.fillStyle='#e7e7e7';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font=textFont(fitText(state.country.leader,148,Number(ts.leader)||15,8,true),true);
+  ctx.fillText(state.country.leader,90,245,148);
 
-  // Center the focus name on the pink box inside the button image, not the whole image.
-  // The button starts at (230.5, 170). Its inner box center is (141, 30.5), so the text center is (371.5, 200.5).
-  ctx.fillStyle='#d7d7d7';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.font=textFont(fitText(state.country.focusText,238,Number(ts.focus)||14,8,true),true);
-  ctx.fillText(state.country.focusText,371.5,200.5,238);
+  ctx.font=textFont(fitText(state.country.focusText,230,Number(ts.focus)||14,8,true),true);
+  ctx.fillText(state.country.focusText,407,58,230);
+
+  ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='#e7e7e7';
+  ctx.font=textFont(fitText(state.country.ideologyText,174,Number(ts.ideology)||15,8,true),true);
+  ctx.fillText(state.country.ideologyText,188,230,174);
+  const election=String(state.country.election||'');
+  const split=election.match(/^([^:]+:)(.*)$/);
+  ctx.font=textFont(Number(ts.election)||12,true);
+  if(split){ctx.fillStyle='#d8d8d8';ctx.fillText(split[1],188,265,175);const labelW=ctx.measureText(split[1]+' ').width;ctx.fillStyle='#e5b025';ctx.fillText(split[2].trim(),188+labelW,265,175-labelW)}
+  else{ctx.fillStyle='#e5b025';ctx.fillText(election,188,265,175)}
+
+  ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458,244,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458,266,72);
+  drawCentered(ideology,405,254,1,48,48);
+
+  ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
+  ctx.fillStyle='#e5b025';ctx.fillText(state.country.economyText,90,372,154);
+  ctx.font=textFont(fitText(state.country.governmentText,118,Number(ts.government)||12,8,true),true);
+  ctx.fillStyle='#e7e7e7';
+  const governmentLines=wrapLines(state.country.governmentText,118,ctx.font,3);
+  governmentLines.forEach((line,index)=>ctx.fillText(line,314,326+index*15,118));
+
+  ctx.textAlign='left';ctx.textBaseline='middle';
+  const rowHeight=17,partyX=508,partyY=218,partyW=196;
+  const shown=slices.slice(0,10);
+  shown.forEach((slice,index)=>{
+    const y=partyY+index*rowHeight;
+    if(index===0&&partyRow)ctx.drawImage(partyRow,partyX,y-7,partyW,15);
+    if(partyColour)ctx.drawImage(partyColour,partyX,y-7,14,14);
+    ctx.fillStyle=slice.color||'#777';ctx.fillRect(partyX+3,y-4,8,8);
+    ctx.fillStyle='#e8e8e8';ctx.font=textFont(Number(ts.party)||11,true);
+    const amount=Math.max(0,Number(slice.value)||0);
+    ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18,y,178);
+  });
+
+  if(occupiedBtn)ctx.drawImage(occupiedBtn,313,358,34,33);
+  if(exileBtn)ctx.drawImage(exileBtn,348,358,34,33);
+  if(subjectsBtn)ctx.drawImage(subjectsBtn,383,358,34,33);
   ctx.shadowColor='transparent';
 }
 async function renderEvent(seq){
@@ -551,13 +624,13 @@ function updatePieTotal(){
 }
 function addPieSlice(){
   const slices=state.country.ideologySlices||(state.country.ideologySlices=[]);
-  if(slices.length>=8)return;
+  if(slices.length>=10)return;
   const colors=['#d94f91','#e3c94f','#58bfcf','#4f70d9','#7ccf67','#b978d6','#d77a4f','#8c8c8c'];
   slices.push({label:`Slice ${slices.length+1}`,value:10,color:colors[slices.length%colors.length]});
   saveState();renderPieEditor();scheduleRender();
 }
 
-function animatedKeysForTool(tool=activeTool){return({country:['flag','leader','focus','ideologyIcon','factionIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
+function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','ideologyIcon','factionIcon','economyIcon','governmentIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
 function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
 function activeAnimationDuration(){let duration=0;for(const key of animatedKeysForTool())if(animatedAssets.has(key))duration=Math.max(duration,animatedDurations.get(key)||1000);return Math.max(100,Math.min(15000,duration||1000))}
 function ensureAnimationLoop(){if(animationLoopId||!activeToolHasAnimation()||exportInProgress)return;const tick=now=>{animationLoopId=0;if(!activeToolHasAnimation()||exportInProgress)return;if(!document.hidden&&now-animationLastPaint>=50&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
@@ -580,13 +653,19 @@ function switchTool(tool){
 
 async function loadManifest(){
   if(manifest)return manifest;
-  try{ const r=await fetch('../assets/icon-library/manifest.json'); manifest=await r.json(); }
-  catch{ manifest=[]; }
+  try{
+    const [shared,extra]=await Promise.all([
+      fetch('../assets/icon-library/manifest.json').then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch('./assets/icon-library/catalog.json').then(r=>r.ok?r.json():[]).catch(()=>[])
+    ]);
+    manifest=[...shared,...extra];
+  }catch{manifest=[]}
   return manifest;
 }
 function normalizeIconSrc(src){ if(src.startsWith('./'))return '../'+src.slice(2); if(src.startsWith('/'))return '..'+src; return src; }
+const ICON_PICKER_INFO={ideology:{title:'Choose ideology icon',category:'ideology'},faction:{title:'Choose alliance / faction icon',category:'factions'},economy:{title:'Choose economy type',category:'economy'},government:{title:'Choose government type',category:'government'}};
 async function openIconPicker(mode){
-  iconMode=mode; $('#iconDialogTitle').textContent=mode==='ideology'?'Choose ideology icon':'Choose alliance / faction icon'; $('#iconSearch').value=''; await renderIconGrid(''); $('#iconDialog').showModal(); setTimeout(()=>$('#iconSearch').focus(),50);
+  iconMode=mode; $('#iconDialogTitle').textContent=ICON_PICKER_INFO[mode]?.title||'Choose icon'; $('#iconSearch').value=''; await renderIconGrid(''); $('#iconDialog').showModal(); setTimeout(()=>$('#iconSearch').focus(),50);
 }
 async function removeStoredCustomIcon(mode){
   await dbDelete(CUSTOM_ICON_DB_KEYS[mode]).catch(()=>{});
@@ -594,7 +673,9 @@ async function removeStoredCustomIcon(mode){
   clearAssetAnimation(mode+'Icon');
 }
 async function chooseBuiltInIcon(mode,src,name){
-  await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='builtin';state.country[mode+'Icon']=src;state.country[mode+'IconName']=name;saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+  await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='builtin';state.country[mode+'Icon']=src;state.country[mode+'IconName']=name;
+  if(mode==='economy')state.country.economyText=name;if(mode==='government')state.country.governmentText=name;
+  saveState();updateThumbs();bindValuesOnly();imageCache.clear();$('#iconDialog').close();scheduleRender();
 }
 async function chooseNoIcon(mode){
   await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='none';state.country[mode+'Icon']='';state.country[mode+'IconName']='No icon';saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
@@ -603,11 +684,14 @@ async function handleCustomIconInput(input){
   const file=input.files?.[0],mode=iconMode;input.value='';if(!file)return;
   if(!looksLikeImageFile(file)){alert('Please choose an image file.');return}
   try{
-    await dbSet(CUSTOM_ICON_DB_KEYS[mode],file);setCustomIconObjectUrl(mode,file);await noteAssetAnimation(mode+'Icon',file);state.country[mode+'IconMode']='custom';state.country[mode+'IconName']=file.name||'Custom icon';saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+    await dbSet(CUSTOM_ICON_DB_KEYS[mode],file);setCustomIconObjectUrl(mode,file);await noteAssetAnimation(mode+'Icon',file);state.country[mode+'IconMode']='custom';state.country[mode+'IconName']=file.name||'Custom icon';
+    const readable=(file.name||'Custom icon').replace(/\.[^.]+$/,'').replace(/^(?:ZZZ_|USC_)/i,'').replace(/[_-]+/g,' ').replace(/\w/g,c=>c.toUpperCase());
+    if(mode==='economy')state.country.economyText=readable;if(mode==='government')state.country.governmentText=readable;
+    saveState();updateThumbs();bindValuesOnly();imageCache.clear();$('#iconDialog').close();scheduleRender();
   }catch(e){alert('Could not store that image locally.');console.error(e)}
 }
 async function renderIconGrid(search){
-  const list=await loadManifest(); const cat=iconMode==='ideology'?'ideology':'factions'; const q=search.trim().toLowerCase();
+  const list=await loadManifest(); const cat=ICON_PICKER_INFO[iconMode]?.category||'ideology'; const q=search.trim().toLowerCase();
   const filtered=list.filter(x=>x.category===cat && (!q || x.name.toLowerCase().includes(q) || x.id.toLowerCase().includes(q))).slice(0,500);
   const grid=$('#iconGrid'); grid.innerHTML=''; const frag=document.createDocumentFragment();
   for(const item of filtered){ const b=document.createElement('button'); b.type='button';b.className='icon-option'; const src=normalizeIconSrc(item.src); b.innerHTML=`<img loading="lazy" src="${src}" alt=""><span>${escapeHtml(item.name)}</span>`; b.onclick=()=>chooseBuiltInIcon(iconMode,src,item.name); frag.appendChild(b); }
@@ -726,9 +810,9 @@ async function exportPNG(){
 }
 async function resetTool(){
   const fresh=cloneDefaults(); state[activeTool]=fresh[activeTool];
-  const keys={country:['flag','leader','focus'],event:['event'],news:['news'],super:['super']}[activeTool]||[];
+  const keys={country:['flag','leader','focus','spirit1','spirit2','spirit3','spirit4'],event:['event'],news:['news'],super:['super']}[activeTool]||[];
   for(const k of keys) await clearAsset(k);
-  if(activeTool==='country')for(const mode of ['ideology','faction'])await removeStoredCustomIcon(mode);
+  if(activeTool==='country')for(const mode of COUNTRY_ICON_MODES)await removeStoredCustomIcon(mode);
   saveState(); bindValuesOnly(); updateThumbs(); updateOutputs(); renderPieEditor(); scheduleRender();
 }
 function bindValuesOnly(){ $$('[data-bind]').forEach(el=>{const val=getPath(state,el.dataset.bind);el.value=val??'';}); }
@@ -742,9 +826,10 @@ function setupDisclaimer(){
 function init(){
   bindInputs(); updateOutputs(); updateThumbs(); renderPieEditor(); setupDisclaimer();
   $$('.tool-tab').forEach(b=>b.onclick=()=>switchTool(b.dataset.tool)); $('#mobileToolSelect').onchange=e=>switchTool(e.target.value);
-  $('#flagFile').onchange=e=>handleAssetInput('flag',e.target); $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
+  $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
+  for(const key of ['spirit1','spirit2','spirit3','spirit4'])$('#'+key+'File').onchange=e=>handleAssetInput(key,e.target);
   $$('[data-clear-asset]').forEach(b=>b.onclick=()=>clearAsset(b.dataset.clearAsset));
-  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#iconUploadInput').onchange=e=>handleCustomIconInput(e.target); $('#iconNoIconBtn').onclick=()=>chooseNoIcon(iconMode); $('#addPieSlice').onclick=addPieSlice;
+  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#chooseEconomy').onclick=()=>openIconPicker('economy'); $('#chooseGovernment').onclick=()=>openIconPicker('government'); $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#iconUploadInput').onchange=e=>handleCustomIconInput(e.target); $('#iconNoIconBtn').onclick=()=>chooseNoIcon(iconMode); $('#addPieSlice').onclick=addPieSlice;
   $('#exportBtn').onclick=exportPNG; $('#resetToolBtn').onclick=()=>{if(confirm('Reset this GFX to its defaults?')) resetTool();};
   switchTool(activeTool); restoreAssets();
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>scheduleRender()).catch(()=>{});

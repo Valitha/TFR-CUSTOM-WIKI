@@ -92,3 +92,19 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
 .export-progress-text{font-size:12px;color:#c8b9cc}
 .export-progress-track{height:8px;border:1px solid #5d4864;background:#080509;overflow:hidden}
 .export-progress-track i{display:block;width:0;height:100%;background:var(--purple);transition:width .08s linear}
+
+
+/* Keep the new country controls tidy without changing the other GFX tools. */
+.country-main-assets{grid-template-columns:repeat(2,minmax(0,1fr))}
+.country-picker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0 13px}
+.spirit-editor-card{border:1px solid var(--line);background:#100b12;margin:10px 0 13px;padding:9px}
+.spirit-editor-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.spirit-editor-head b{font-size:13px}.spirit-editor-head small{font-size:10px;color:var(--muted);text-align:right}
+.spirit-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin:0}.spirit-grid .asset-card{padding:6px}.spirit-grid .asset-card img{height:58px}
+@media(max-width:720px){
+  .country-picker-grid{grid-template-columns:1fr}
+  .country-main-assets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spirit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spirit-grid .asset-card img{height:64px}
+  .spirit-editor-head{align-items:flex-start}.spirit-editor-head small{max-width:140px}
+}

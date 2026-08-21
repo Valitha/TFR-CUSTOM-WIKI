@@ -55,32 +55,30 @@
         <div class="preview-head">
           <div>
             <strong id="previewTitle">Country</strong>
-            <span id="previewSize">524 × 248</span>
+            <span id="previewSize">1438 × 788</span>
           </div>
           <button id="resetToolBtn" class="ui-btn subtle" type="button">Reset this GFX</button>
         </div>
         <div class="canvas-stage" id="canvasStage">
-          <canvas id="gfxCanvas" width="524" height="248"></canvas>
+          <canvas id="gfxCanvas" width="1438" height="788"></canvas>
         </div>
       </section>
 
       <section class="controls-panel" id="controlsPanel">
         <div class="tool-controls active" data-controls="country">
-          <div class="section-title">Country overview</div>
+          <div class="section-title">Country politics</div>
           <div class="field-grid two">
-            <label>Country name<input data-bind="country.country" type="text" placeholder="Type text here..."></label>
             <label>Leader name<input data-bind="country.leader" type="text" placeholder="Type text here..."></label>
-            <label>Faction name<input data-bind="country.faction" type="text" placeholder="Type text here..."></label>
-            <label>Party<input data-bind="country.party" type="text" placeholder="Type text here..."></label>
             <label>Ideology name<input data-bind="country.ideologyText" type="text" placeholder="Type text here..."></label>
             <label>Election / status<input data-bind="country.election" type="text" placeholder="Type text here..."></label>
+            <label>Power balance<input data-bind="country.powerBalancePercent" type="text" placeholder="100.0%"></label>
+            <label>Power balance levels<input data-bind="country.powerBalanceLevels" type="text" placeholder="1/1"></label>
+            <label>Economy type name<input data-bind="country.economyText" type="text" placeholder="Type text here..."></label>
+            <label>Government type name<input data-bind="country.governmentText" type="text" placeholder="Type text here..."></label>
             <label class="span-two">National focus name<input data-bind="country.focusText" type="text" placeholder="Type text here..."></label>
           </div>
 
-          <div class="asset-grid">
-            <div class="asset-card">
-              <span>Flag</span><div class="asset-preview"><img id="flagThumb" alt="Flag preview"><button class="asset-clear-x" data-clear-asset="flag" type="button" aria-label="Remove flag image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="flagFile" type="file" accept="image/*"></label>
-            </div>
+          <div class="asset-grid country-main-assets">
             <div class="asset-card">
               <span>Leader</span><div class="asset-preview"><img id="leaderThumb" alt="Leader preview"><button class="asset-clear-x" data-clear-asset="leader" type="button" aria-label="Remove leader image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="leaderFile" type="file" accept="image/*"></label>
             </div>
@@ -89,13 +87,25 @@
             </div>
           </div>
 
-          <div class="picker-row">
+          <div class="country-picker-grid">
             <button class="picker-button" id="chooseIdeology" type="button"><img id="ideologyThumb" alt=""><span><b>Ideology icon</b><small id="ideologyName">Choose from built-in library</small></span></button>
             <button class="picker-button" id="chooseFaction" type="button"><img id="factionThumb" alt=""><span><b>Alliance / faction icon</b><small id="factionName">Choose from built-in library</small></span></button>
+            <button class="picker-button" id="chooseEconomy" type="button"><img id="economyThumb" alt=""><span><b>Economy type</b><small id="economyName">Choose an economy type</small></span></button>
+            <button class="picker-button" id="chooseGovernment" type="button"><img id="governmentThumb" alt=""><span><b>Government type</b><small id="governmentName">Choose a government type</small></span></button>
+          </div>
+
+          <div class="spirit-editor-card">
+            <div class="spirit-editor-head"><b>National spirits</b><small>Four slots shown in the country panel</small></div>
+            <div class="asset-grid spirit-grid">
+              <div class="asset-card"><span>Spirit 1</span><div class="asset-preview"><img id="spirit1Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit1" type="button" aria-label="Reset national spirit 1" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit1File" type="file" accept="image/*"></label></div>
+              <div class="asset-card"><span>Spirit 2</span><div class="asset-preview"><img id="spirit2Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit2" type="button" aria-label="Reset national spirit 2" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit2File" type="file" accept="image/*"></label></div>
+              <div class="asset-card"><span>Spirit 3</span><div class="asset-preview"><img id="spirit3Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit3" type="button" aria-label="Reset national spirit 3" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit3File" type="file" accept="image/*"></label></div>
+              <div class="asset-card"><span>Spirit 4</span><div class="asset-preview"><img id="spirit4Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit4" type="button" aria-label="Reset national spirit 4" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit4File" type="file" accept="image/*"></label></div>
+            </div>
           </div>
 
           <div class="pie-editor-card">
-            <div class="pie-editor-head"><div><b>Ideology pie chart</b></div><button id="addPieSlice" class="ui-btn subtle" type="button">+ Slice</button></div>
+            <div class="pie-editor-head"><div><b>Party / ideology breakdown</b></div><button id="addPieSlice" class="ui-btn subtle" type="button">+ Slice</button></div>
             <div class="pie-editor-labels"><span>Name</span><span>Share</span><span>Colour</span><span></span></div>
             <div id="pieEditorRows" class="pie-editor-rows"></div>
             <div id="pieTotal" class="pie-total"></div>
@@ -106,18 +116,17 @@
             <div class="advanced-body">
               <div class="advanced-subtitle">Image placement</div>
               <div class="transform-stack">
-                <div class="transform-group"><b>Flag</b><label>X <input data-bind="country.transforms.flag.x" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.flag.x"></output></label><label>Y <input data-bind="country.transforms.flag.y" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.flag.y"></output></label><label>Size <input data-bind="country.transforms.flag.size" type="range" min="50" max="250" step="1"><output data-transform-output="country.transforms.flag.size"></output></label></div>
                 <div class="transform-group"><b>Leader</b><label>X <input data-bind="country.transforms.leader.x" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.leader.x"></output></label><label>Y <input data-bind="country.transforms.leader.y" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.leader.y"></output></label><label>Size <input data-bind="country.transforms.leader.size" type="range" min="50" max="250" step="1"><output data-transform-output="country.transforms.leader.size"></output></label></div>
                 <div class="transform-group"><b>National focus</b><label>X <input data-bind="country.transforms.focus.x" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.focus.x"></output></label><label>Y <input data-bind="country.transforms.focus.y" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.focus.y"></output></label><label>Size <input data-bind="country.transforms.focus.size" type="range" min="50" max="250" step="1"><output data-transform-output="country.transforms.focus.size"></output></label></div>
               </div>
               <div class="advanced-subtitle">Text sizes</div>
               <div class="text-size-list">
-                <label>Country <input data-bind="country.textSizes.country" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.country"></output></label>
-                <label>Faction <input data-bind="country.textSizes.faction" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.faction"></output></label>
                 <label>Leader <input data-bind="country.textSizes.leader" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.leader"></output></label>
-                <label>Party <input data-bind="country.textSizes.party" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.party"></output></label>
                 <label>Ideology <input data-bind="country.textSizes.ideology" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.ideology"></output></label>
                 <label>Election / status <input data-bind="country.textSizes.election" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.election"></output></label>
+                <label>Economy <input data-bind="country.textSizes.economy" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.economy"></output></label>
+                <label>Government <input data-bind="country.textSizes.government" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.government"></output></label>
+                <label>Party list <input data-bind="country.textSizes.party" type="range" min="8" max="18" step="1"><output data-size-output="country.textSizes.party"></output></label>
                 <label>National focus <input data-bind="country.textSizes.focus" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.focus"></output></label>
               </div>
             </div>
