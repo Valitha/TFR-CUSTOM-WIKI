@@ -1,5 +1,7 @@
-const CACHE_NAME = 'tfr-wiki-shell-v32';
+const CACHE_NAME = 'tfr-wiki-shell-v34';
+const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const CORE = [
+  HTML2CANVAS_URL,
   './',
   './index.html',
   './manifest.webmanifest',
@@ -124,6 +126,10 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
+  if (url.href === HTML2CANVAS_URL) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
   if (url.origin !== self.location.origin) return;
 
   // Let the browser handle byte-range audio requests normally. The editor itself

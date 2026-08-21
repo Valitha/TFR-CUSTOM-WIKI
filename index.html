@@ -67,7 +67,13 @@
       <div class="mobile-sidebar-actions">
         <button id="mobileNewProjectBtn" class="ui-btn" type="button">New project</button>
         <button id="mobileImportBtn" class="ui-btn" type="button">Import</button>
-        <button id="mobileExportBtn" class="ui-btn primary" type="button">Export HTML</button>
+        <details id="mobileExportMenu" class="mobile-export-menu">
+          <summary class="ui-btn primary" aria-label="Export options">Export <span aria-hidden="true">⌄</span></summary>
+          <div class="mobile-export-options">
+            <button id="mobileExportHtmlBtn" class="ui-btn" type="button">Export HTML backup</button>
+            <button id="mobileExportPngBtn" class="ui-btn" type="button">Export page PNG</button>
+          </div>
+        </details>
         <a class="ui-btn gfx-maker-mobile-link" href="./gfx-maker/">GFX Maker</a>
       </div>
     </aside>
@@ -247,7 +253,7 @@
       </section>
 
       <section id="previewPane" class="preview-pane" hidden>
-        <button id="mobileReturnEdit" class="mobile-return-edit" type="button">✎ Continue editing</button>
+        <button id="mobileReturnEdit" class="mobile-return-edit" type="button">✎ Edit</button>
         <button id="previewChromeToggle" class="preview-chrome-toggle" type="button" title="Hide editor interface" aria-label="Hide editor interface">⌄</button>
         <div class="preview-toolbar">
           <select id="previewWidth" aria-label="Preview width">
