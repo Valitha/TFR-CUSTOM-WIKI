@@ -3,12 +3,12 @@
 
   const PHONE = window.matchMedia('(max-width:760px)');
   const SAFARI_EDGE = 28;
-  const PAGE_OPEN_ZONE_RATIO = 0.82;
+  const PAGE_OPEN_ZONE_RATIO = 0.92;
   const LOCK_DISTANCE = 10;
-  const COMMIT_RATIO = 0.18;
-  const FAST_SWIPE_VELOCITY = 0.30; // px/ms
-  const FAST_SWIPE_MIN_PROGRESS = 0.06;
-  const MAX_SETTLE_MS = 180;
+  const COMMIT_RATIO = 0.12;
+  const FAST_SWIPE_VELOCITY = 0.20; // px/ms
+  const FAST_SWIPE_MIN_PROGRESS = 0.03;
+  const MAX_SETTLE_MS = 155;
 
   const body = document.body;
   const sidebar = document.getElementById('pageSidebar');
@@ -44,25 +44,20 @@
   function nextFrame(){ return new Promise(resolve=>requestAnimationFrame(resolve)); }
 
   function scheduleVisual(fn){
-    pendingVisual=fn;
-    if(visualFrame) return;
-    visualFrame=requestAnimationFrame(()=>{
-      visualFrame=0;
-      const draw=pendingVisual;
-      pendingVisual=null;
-      if(draw) draw();
-    });
+    // Touchmove is already paced by WebKit. Applying compositor-only transforms
+    // immediately avoids adding an extra frame of latency to slow drags.
+    pendingVisual=null;
+    if(visualFrame){ cancelAnimationFrame(visualFrame); visualFrame=0; }
+    fn();
   }
   function flushVisual(){
     if(visualFrame){ cancelAnimationFrame(visualFrame); visualFrame=0; }
-    const draw=pendingVisual;
     pendingVisual=null;
-    if(draw) draw();
   }
 
   function stopSyntheticClick(){ suppressClickUntil=Date.now()+420; }
   document.addEventListener('click',e=>{
-    if(Date.now()>suppressClickUntil) return;
+    if(!e.isTrusted || Date.now()>suppressClickUntil) return;
     if(e.target instanceof Element && e.target.closest('#mobileDrawerBackdrop,#pageSidebar')){
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -126,8 +121,14 @@
     applyDrawerAmount(target,g.drawerWidth || measureDrawer());
     await delay(ms+25);
 
-    if(target===1 && !body.classList.contains('mobile-pages-open')) mobilePageMenuBtn?.click();
-    if(target===0 && body.classList.contains('mobile-pages-open')) mobilePageMenuClose?.click();
+    if(target===1 && !body.classList.contains('mobile-pages-open')){
+      mobilePageMenuBtn?.click();
+      await nextFrame();
+    }
+    if(target===0 && body.classList.contains('mobile-pages-open')){
+      mobilePageMenuClose?.click();
+      await nextFrame();
+    }
     drawerStyles(false);
   }
 
@@ -323,8 +324,8 @@
   // reversed before release.
   function wirePreview(){
     const doc=previewFrame?.contentDocument;
-    if(!doc || doc.__tfrGestureV37) return;
-    doc.__tfrGestureV37=true;
+    if(!doc || doc.__tfrGestureV38) return;
+    doc.__tfrGestureV38=true;
     let pg=null;
 
     function blocked(target){
