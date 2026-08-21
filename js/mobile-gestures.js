@@ -3,11 +3,12 @@
 
   const PHONE = window.matchMedia('(max-width:760px)');
   const SAFARI_EDGE = 28;
-  const PAGE_OPEN_ZONE_RATIO = 0.60;
-  const LOCK_DISTANCE = 12;
-  const COMMIT_RATIO = 0.34;
-  const FAST_SWIPE_VELOCITY = 0.52; // px/ms
-  const SETTLE_MS = 220;
+  const PAGE_OPEN_ZONE_RATIO = 0.82;
+  const LOCK_DISTANCE = 10;
+  const COMMIT_RATIO = 0.18;
+  const FAST_SWIPE_VELOCITY = 0.30; // px/ms
+  const FAST_SWIPE_MIN_PROGRESS = 0.06;
+  const MAX_SETTLE_MS = 180;
 
   const body = document.body;
   const sidebar = document.getElementById('pageSidebar');
@@ -22,6 +23,8 @@
 
   let gesture = null;
   let suppressClickUntil = 0;
+  let visualFrame = 0;
+  let pendingVisual = null;
 
   function isPhone(){ return PHONE.matches; }
   function standalone(){
@@ -30,19 +33,36 @@
       window.navigator.standalone === true;
   }
   function clamp(v,min=0,max=1){ return Math.max(min,Math.min(max,v)); }
-  function viewportWidth(){ return Math.max(1, window.innerWidth || document.documentElement.clientWidth || 390); }
-  function drawerWidth(){ return Math.max(1, sidebar?.getBoundingClientRect().width || Math.min(viewportWidth()*.88,360)); }
-  function safeWebStart(x,width){ return standalone() || (x >= SAFARI_EDGE && x <= width-SAFARI_EDGE); }
+  function viewportWidth(){ return Math.max(1,window.innerWidth || document.documentElement.clientWidth || 390); }
+  function measureDrawer(){ return Math.max(1,sidebar?.getBoundingClientRect().width || Math.min(viewportWidth()*.88,360)); }
+  function safeWebStart(x,width){ return standalone() || (x>=SAFARI_EDGE && x<=width-SAFARI_EDGE); }
   function isInteractive(target){
     if(!(target instanceof Element)) return false;
     return !!target.closest('input,textarea,select,button,a,summary,[contenteditable=true],.file-btn,.route-flag-picker,.modal,.icon-library-modal,.rich-toolbar,.infobox-mini-toolbar');
   }
-  function animationFrame(){ return new Promise(resolve=>requestAnimationFrame(resolve)); }
   function delay(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+  function nextFrame(){ return new Promise(resolve=>requestAnimationFrame(resolve)); }
 
-  function stopSyntheticClick(){ suppressClickUntil = Date.now() + 420; }
+  function scheduleVisual(fn){
+    pendingVisual=fn;
+    if(visualFrame) return;
+    visualFrame=requestAnimationFrame(()=>{
+      visualFrame=0;
+      const draw=pendingVisual;
+      pendingVisual=null;
+      if(draw) draw();
+    });
+  }
+  function flushVisual(){
+    if(visualFrame){ cancelAnimationFrame(visualFrame); visualFrame=0; }
+    const draw=pendingVisual;
+    pendingVisual=null;
+    if(draw) draw();
+  }
+
+  function stopSyntheticClick(){ suppressClickUntil=Date.now()+420; }
   document.addEventListener('click',e=>{
-    if(Date.now() > suppressClickUntil) return;
+    if(Date.now()>suppressClickUntil) return;
     if(e.target instanceof Element && e.target.closest('#mobileDrawerBackdrop,#pageSidebar')){
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -55,47 +75,60 @@
       body.classList.add('mobile-pages-gesture');
       sidebar.classList.add('mobile-gesture-dragging');
       backdrop.classList.add('mobile-gesture-visible','mobile-gesture-dragging');
-      sidebar.style.transition='none';
-      backdrop.style.transition='none';
-    }else{
-      body.classList.remove('mobile-pages-gesture');
-      sidebar.classList.remove('mobile-gesture-dragging');
-      backdrop.classList.remove('mobile-gesture-visible','mobile-gesture-dragging');
-      sidebar.style.removeProperty('transition');
-      sidebar.style.removeProperty('transform');
-      backdrop.style.removeProperty('transition');
-      backdrop.style.removeProperty('opacity');
+      sidebar.style.setProperty('transition','none','important');
+      backdrop.style.setProperty('transition','none','important');
+      return;
     }
+    body.classList.remove('mobile-pages-gesture');
+    sidebar.classList.remove('mobile-gesture-dragging','mobile-gesture-settling');
+    backdrop.classList.remove('mobile-gesture-visible','mobile-gesture-dragging','mobile-gesture-settling');
+    sidebar.style.removeProperty('transition');
+    sidebar.style.removeProperty('transform');
+    backdrop.style.removeProperty('transition');
+    backdrop.style.removeProperty('opacity');
   }
 
-  function setDrawerProgress(progress,opening){
+  function applyDrawerAmount(amount,width){
     if(!sidebar || !backdrop) return;
-    const w=drawerWidth();
-    const p=clamp(progress);
-    const x = opening ? (-w * (1-p)) : (-w * p);
-    sidebar.style.transform=`translate3d(${x}px,0,0)`;
-    backdrop.style.opacity=String(.58 * (opening ? p : (1-p)));
+    const p=clamp(amount);
+    const x=-width*(1-p);
+    // The normal drawer rules use !important, so the live gesture must too.
+    sidebar.style.setProperty('transform',`translate3d(${x}px,0,0)`,'important');
+    backdrop.style.setProperty('opacity',String(.58*p),'important');
   }
 
-  async function settleDrawer(opening,commit,currentProgress){
-    if(!sidebar || !backdrop) return;
-    stopSyntheticClick();
-    sidebar.style.transition=`transform ${SETTLE_MS}ms cubic-bezier(.22,.78,.2,1)`;
-    backdrop.style.transition=`opacity ${Math.max(150,SETTLE_MS-35)}ms ease`;
-
-    const shouldOpen = opening ? commit : !commit;
-    if(shouldOpen && !body.classList.contains('mobile-pages-open')) mobilePageMenuBtn?.click();
-    if(!shouldOpen && body.classList.contains('mobile-pages-open')) mobilePageMenuClose?.click();
-
-    await animationFrame();
-    setDrawerProgress(shouldOpen ? 1 : 0, true);
-    await delay(SETTLE_MS + 35);
-    drawerStyles(false);
-  }
-
-  function beginDrawer(opening){
+  function beginDrawer(g,opening){
+    g.drawerWidth=measureDrawer();
+    g.progress=opening?0:1;
     drawerStyles(true);
-    setDrawerProgress(opening ? 0 : 0, opening);
+    applyDrawerAmount(g.progress,g.drawerWidth);
+  }
+
+  async function settleDrawer(g,commit){
+    if(!sidebar || !backdrop) return;
+    flushVisual();
+    stopSyntheticClick();
+
+    const opening=g.kind==='open-pages';
+    const target=opening ? (commit?1:0) : (commit?0:1);
+    const current=clamp(g.progress ?? (opening?0:1));
+    const distance=Math.abs(target-current);
+    const ms=Math.round(Math.min(MAX_SETTLE_MS,95+distance*100));
+
+    sidebar.classList.remove('mobile-gesture-dragging');
+    backdrop.classList.remove('mobile-gesture-dragging');
+    sidebar.classList.add('mobile-gesture-settling');
+    backdrop.classList.add('mobile-gesture-settling');
+    sidebar.style.setProperty('transition',`transform ${ms}ms cubic-bezier(.22,.78,.2,1)`,'important');
+    backdrop.style.setProperty('transition',`opacity ${Math.max(90,ms-20)}ms ease`,'important');
+
+    await nextFrame();
+    applyDrawerAmount(target,g.drawerWidth || measureDrawer());
+    await delay(ms+25);
+
+    if(target===1 && !body.classList.contains('mobile-pages-open')) mobilePageMenuBtn?.click();
+    if(target===0 && body.classList.contains('mobile-pages-open')) mobilePageMenuClose?.click();
+    drawerStyles(false);
   }
 
   function modeLayerStyles(kind,active){
@@ -105,76 +138,69 @@
       body.classList.add('mobile-mode-gesture');
       previewPane.hidden=false;
       if(kind==='from-preview') editorPane.hidden=false;
-      previewPane.style.transition='none';
-      editorPane.style.transition='none';
-      previewPane.style.willChange='transform';
-      editorPane.style.willChange='transform,opacity';
-    }else{
-      body.classList.remove('mobile-gesture-to-preview','mobile-gesture-from-preview','mobile-mode-gesture');
-      previewPane.style.removeProperty('transition');
-      previewPane.style.removeProperty('transform');
-      previewPane.style.removeProperty('will-change');
-      editorPane.style.removeProperty('transition');
-      editorPane.style.removeProperty('transform');
-      editorPane.style.removeProperty('opacity');
-      editorPane.style.removeProperty('will-change');
-      const inPreview=body.classList.contains('mobile-preview-active');
-      editorPane.hidden=inPreview;
-      previewPane.hidden=!inPreview;
+      previewPane.style.setProperty('transition','none','important');
+      previewPane.style.setProperty('will-change','transform','important');
+      return;
     }
+    body.classList.remove('mobile-gesture-to-preview','mobile-gesture-from-preview','mobile-mode-gesture');
+    previewPane.style.removeProperty('transition');
+    previewPane.style.removeProperty('transform');
+    previewPane.style.removeProperty('will-change');
+    editorPane.style.removeProperty('transition');
+    editorPane.style.removeProperty('transform');
+    editorPane.style.removeProperty('opacity');
+    editorPane.style.removeProperty('will-change');
+    const inPreview=body.classList.contains('mobile-preview-active');
+    editorPane.hidden=inPreview;
+    previewPane.hidden=!inPreview;
   }
 
-  function setModeProgress(kind,progress){
-    if(!editorPane || !previewPane) return;
-    const p=clamp(progress),w=viewportWidth();
-    if(kind==='to-preview'){
-      previewPane.style.transform=`translate3d(${w*(1-p)}px,0,0)`;
-      editorPane.style.transform=`translate3d(${-w*.16*p}px,0,0)`;
-      editorPane.style.opacity=String(1-.08*p);
-    }else{
-      previewPane.style.transform=`translate3d(${w*p}px,0,0)`;
-      editorPane.style.transform=`translate3d(${-w*.07*(1-p)}px,0,0)`;
-      editorPane.style.opacity=String(.92+.08*p);
-    }
+  function applyModeProgress(kind,progress,width){
+    if(!previewPane) return;
+    const p=clamp(progress);
+    // Only move the foreground surface. Moving both full application trees was
+    // unnecessarily expensive on iOS and made slow drags look low-framerate.
+    const x=kind==='to-preview' ? width*(1-p) : width*p;
+    previewPane.style.setProperty('transform',`translate3d(${x}px,0,0)`,'important');
   }
 
-  function beginMode(kind){
+  function beginMode(g,kind){
+    g.viewportWidth=viewportWidth();
+    g.progress=0;
     modeLayerStyles(kind,true);
-    setModeProgress(kind,0);
+    applyModeProgress(kind,0,g.viewportWidth);
   }
 
-  async function waitForPreviewMode(expected,timeout=1350){
+  async function waitForPreviewMode(expected,timeout=1200){
     const started=performance.now();
     while(performance.now()-started<timeout){
       if(body.classList.contains('mobile-preview-active')===expected) return true;
-      await delay(25);
+      await delay(20);
     }
     return false;
   }
 
-  async function settleMode(kind,commit){
-    if(!editorPane || !previewPane) return;
-    previewPane.style.transition=`transform ${SETTLE_MS}ms cubic-bezier(.22,.78,.2,1)`;
-    editorPane.style.transition=`transform ${SETTLE_MS}ms cubic-bezier(.22,.78,.2,1),opacity ${SETTLE_MS}ms ease`;
+  async function settleMode(g,kind,commit){
+    if(!previewPane) return;
+    flushVisual();
+    const current=clamp(g.progress||0);
+    const target=commit?1:0;
+    const distance=Math.abs(target-current);
+    const ms=Math.round(Math.min(MAX_SETTLE_MS,95+distance*95));
+    previewPane.style.setProperty('transition',`transform ${ms}ms cubic-bezier(.22,.78,.2,1)`,'important');
 
-    if(kind==='to-preview'){
-      await animationFrame();
-      setModeProgress(kind,commit?1:0);
-      await delay(SETTLE_MS+20);
-      if(commit){
+    await nextFrame();
+    applyModeProgress(kind,target,g.viewportWidth || viewportWidth());
+    await delay(ms+20);
+
+    if(commit){
+      if(kind==='to-preview'){
         mobilePreviewBtn?.click();
         await waitForPreviewMode(true);
+      }else{
+        mobileReturnEdit?.click();
+        await waitForPreviewMode(false);
       }
-      modeLayerStyles(kind,false);
-      return;
-    }
-
-    await animationFrame();
-    setModeProgress(kind,commit?1:0);
-    await delay(SETTLE_MS+20);
-    if(commit){
-      mobileReturnEdit?.click();
-      await waitForPreviewMode(false);
     }
     modeLayerStyles(kind,false);
   }
@@ -183,12 +209,21 @@
     const dt=Math.max(16,performance.now()-g.startedAt);
     return (currentX-g.x)/dt;
   }
+  function shouldCommit(progress,velocityValue,direction){
+    if(progress>=COMMIT_RATIO) return true;
+    return progress>=FAST_SWIPE_MIN_PROGRESS && (direction<0 ? velocityValue<=-FAST_SWIPE_VELOCITY : velocityValue>=FAST_SWIPE_VELOCITY);
+  }
 
   function decideEditorKind(g,dx,dy){
     if(g.kind) return g.kind;
     if(Math.abs(dx)<LOCK_DISTANCE && Math.abs(dy)<LOCK_DISTANCE) return null;
-    if(Math.abs(dy)>Math.abs(dx)*1.08){ g.cancelled=true; return null; }
+    if(Math.abs(dy)>Math.abs(dx)*1.12){ g.cancelled=true; return null; }
     if(Math.abs(dx)<=Math.abs(dy)*1.08) return null;
+    if(g.drawerOpen){
+      if(dx<0) return (g.kind='close-pages');
+      g.cancelled=true;
+      return null;
+    }
     if(dx>0 && g.canOpenPages) return (g.kind='open-pages');
     if(dx<0 && g.canPreview) return (g.kind='to-preview');
     g.cancelled=true;
@@ -202,12 +237,11 @@
     const drawerOpen=body.classList.contains('mobile-pages-open');
 
     if(drawerOpen){
-      // The dimmed backdrop and panel border are both valid close-swipe starts.
-      // Inputs/buttons inside the panel stay usable normally, but the backdrop
-      // itself is a button element and must still accept a drag-to-close.
       const onBackdrop=e.target instanceof Element && !!e.target.closest('#mobileDrawerBackdrop');
+      // Backdrop/edges are always draggable. Keep form controls inside the panel
+      // usable, but any non-control area of the drawer can start the close drag.
       if(!onBackdrop && isInteractive(e.target)) return;
-      gesture={kind:'close-pages',x:t.clientX,y:t.clientY,startedAt:performance.now(),started:false,moved:false};
+      gesture={kind:null,drawerOpen:true,x:t.clientX,y:t.clientY,startedAt:performance.now(),started:false,cancelled:false,progress:1};
       return;
     }
 
@@ -218,12 +252,13 @@
     const safe=safeWebStart(t.clientX,width);
     gesture={
       kind:null,
+      drawerOpen:false,
       x:t.clientX,
       y:t.clientY,
       startedAt:performance.now(),
       started:false,
-      moved:false,
       cancelled:false,
+      progress:0,
       canOpenPages:safe && t.clientX<=width*PAGE_OPEN_ZONE_RATIO,
       canPreview:safe
     };
@@ -231,59 +266,65 @@
 
   document.addEventListener('touchmove',e=>{
     if(!gesture || !e.touches.length || gesture.cancelled) return;
-    const t=e.touches[0],dx=t.clientX-gesture.x,dy=t.clientY-gesture.y;
-    const kind=gesture.kind==='close-pages' ? 'close-pages' : decideEditorKind(gesture,dx,dy);
+    const t=e.touches[0];
+    const dx=t.clientX-gesture.x;
+    const dy=t.clientY-gesture.y;
+    const kind=decideEditorKind(gesture,dx,dy);
     if(!kind) return;
 
     if(!gesture.started){
-      if(kind==='open-pages') beginDrawer(true);
-      else if(kind==='close-pages') beginDrawer(false);
-      else if(kind==='to-preview') beginMode('to-preview');
+      if(kind==='open-pages') beginDrawer(gesture,true);
+      else if(kind==='close-pages') beginDrawer(gesture,false);
+      else if(kind==='to-preview') beginMode(gesture,'to-preview');
       gesture.started=true;
     }
 
-    gesture.moved=gesture.moved || Math.abs(dx)>LOCK_DISTANCE;
     e.preventDefault();
 
-    if(kind==='open-pages') setDrawerProgress(Math.max(0,dx)/drawerWidth(),true);
-    else if(kind==='close-pages') setDrawerProgress(Math.max(0,-dx)/drawerWidth(),false);
-    else if(kind==='to-preview') setModeProgress('to-preview',Math.max(0,-dx)/viewportWidth());
+    if(kind==='open-pages'){
+      gesture.progress=clamp(Math.max(0,dx)/(gesture.drawerWidth||1));
+      const p=gesture.progress,w=gesture.drawerWidth;
+      scheduleVisual(()=>applyDrawerAmount(p,w));
+    }else if(kind==='close-pages'){
+      gesture.progress=clamp(1+Math.min(0,dx)/(gesture.drawerWidth||1));
+      const p=gesture.progress,w=gesture.drawerWidth;
+      scheduleVisual(()=>applyDrawerAmount(p,w));
+    }else if(kind==='to-preview'){
+      gesture.progress=clamp(Math.max(0,-dx)/(gesture.viewportWidth||1));
+      const p=gesture.progress,w=gesture.viewportWidth;
+      scheduleVisual(()=>applyModeProgress('to-preview',p,w));
+    }
   },{passive:false});
 
   document.addEventListener('touchend',e=>{
     if(!gesture || !e.changedTouches.length){ gesture=null; return; }
-    const g=gesture; gesture=null;
+    const g=gesture;
+    gesture=null;
     if(!g.started) return;
-    const t=e.changedTouches[0],dx=t.clientX-g.x;
+    const t=e.changedTouches[0];
     const v=velocity(g,t.clientX);
 
-    if(g.kind==='open-pages'){
-      const p=clamp(Math.max(0,dx)/drawerWidth());
-      settleDrawer(true,p>=COMMIT_RATIO || (v>FAST_SWIPE_VELOCITY && p>.10),p);
-    }else if(g.kind==='close-pages'){
-      const p=clamp(Math.max(0,-dx)/drawerWidth());
-      settleDrawer(false,p>=COMMIT_RATIO || (v<-FAST_SWIPE_VELOCITY && p>.10),p);
-    }else if(g.kind==='to-preview'){
-      const p=clamp(Math.max(0,-dx)/viewportWidth());
-      settleMode('to-preview',p>=COMMIT_RATIO || (v<-FAST_SWIPE_VELOCITY && p>.10));
-    }
+    if(g.kind==='open-pages') settleDrawer(g,shouldCommit(g.progress,v,1));
+    else if(g.kind==='close-pages') settleDrawer(g,shouldCommit(1-g.progress,v,-1));
+    else if(g.kind==='to-preview') settleMode(g,'to-preview',shouldCommit(g.progress,v,-1));
   },{passive:true});
 
   document.addEventListener('touchcancel',()=>{
     if(!gesture) return;
-    const g=gesture; gesture=null;
+    const g=gesture;
+    gesture=null;
     if(!g.started) return;
-    if(g.kind==='open-pages') settleDrawer(true,false,0);
-    else if(g.kind==='close-pages') settleDrawer(false,false,0);
-    else if(g.kind==='to-preview') settleMode('to-preview',false);
+    if(g.kind==='open-pages' || g.kind==='close-pages') settleDrawer(g,false);
+    else if(g.kind==='to-preview') settleMode(g,'to-preview',false);
   },{passive:true});
 
-  // Preview is a same-origin srcdoc iframe. Keep its gesture interactive as
-  // well: dragging right physically moves Preview and reveals the editor below.
+  // Preview is a same-origin srcdoc iframe. Dragging right moves the Preview
+  // surface itself, so the editor is visible underneath and the gesture can be
+  // reversed before release.
   function wirePreview(){
     const doc=previewFrame?.contentDocument;
-    if(!doc || doc.__tfrGestureV36) return;
-    doc.__tfrGestureV36=true;
+    if(!doc || doc.__tfrGestureV37) return;
+    doc.__tfrGestureV37=true;
     let pg=null;
 
     function blocked(target){
@@ -294,36 +335,41 @@
       pg=null;
       if(!isPhone() || e.touches.length!==1 || blocked(e.target)) return;
       const t=e.touches[0];
-      const width=Math.max(1,previewFrame.contentWindow?.innerWidth||viewportWidth());
+      const width=Math.max(1,previewFrame.contentWindow?.innerWidth || viewportWidth());
       if(!safeWebStart(t.clientX,width)) return;
-      pg={x:t.clientX,y:t.clientY,startedAt:performance.now(),started:false,cancelled:false};
+      pg={x:t.clientX,y:t.clientY,startedAt:performance.now(),started:false,cancelled:false,progress:0,viewportWidth:width};
     },{passive:true});
 
     doc.addEventListener('touchmove',e=>{
       if(!pg || !e.touches.length || pg.cancelled) return;
-      const t=e.touches[0],dx=t.clientX-pg.x,dy=t.clientY-pg.y;
+      const t=e.touches[0];
+      const dx=t.clientX-pg.x;
+      const dy=t.clientY-pg.y;
       if(!pg.started){
         if(Math.abs(dx)<LOCK_DISTANCE && Math.abs(dy)<LOCK_DISTANCE) return;
-        if(Math.abs(dy)>Math.abs(dx)*1.08 || dx<=0){ pg.cancelled=true; return; }
-        beginMode('from-preview');
+        if(Math.abs(dy)>Math.abs(dx)*1.12 || dx<=0){ pg.cancelled=true; return; }
+        beginMode(pg,'from-preview');
         pg.started=true;
       }
       e.preventDefault();
-      setModeProgress('from-preview',Math.max(0,dx)/viewportWidth());
+      pg.progress=clamp(Math.max(0,dx)/(pg.viewportWidth||1));
+      const p=pg.progress,w=pg.viewportWidth;
+      scheduleVisual(()=>applyModeProgress('from-preview',p,w));
     },{passive:false});
 
     doc.addEventListener('touchend',e=>{
       if(!pg || !e.changedTouches.length){ pg=null; return; }
-      const g=pg; pg=null;
+      const g=pg;
+      pg=null;
       if(!g.started) return;
-      const t=e.changedTouches[0],dx=t.clientX-g.x;
-      const dt=Math.max(16,performance.now()-g.startedAt),v=dx/dt;
-      const p=clamp(Math.max(0,dx)/viewportWidth());
-      settleMode('from-preview',p>=COMMIT_RATIO || (v>FAST_SWIPE_VELOCITY && p>.10));
+      const t=e.changedTouches[0];
+      const dt=Math.max(16,performance.now()-g.startedAt);
+      const v=(t.clientX-g.x)/dt;
+      settleMode(g,'from-preview',shouldCommit(g.progress,v,1));
     },{passive:true});
 
     doc.addEventListener('touchcancel',()=>{
-      if(pg?.started) settleMode('from-preview',false);
+      if(pg?.started) settleMode(pg,'from-preview',false);
       pg=null;
     },{passive:true});
   }
