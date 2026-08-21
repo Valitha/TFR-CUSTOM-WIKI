@@ -102,6 +102,18 @@
             <div id="pieTotal" class="pie-total"></div>
           </div>
 
+          <details class="text-size-card">
+            <summary>Text sizes</summary>
+            <div class="text-size-help">Shrink unusually long labels or enlarge short ones. Text still auto-fits to avoid covering the GFX icons.</div>
+            <label>Country <input data-bind="country.textSizes.country" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.country"></output></label>
+            <label>Faction <input data-bind="country.textSizes.faction" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.faction"></output></label>
+            <label>Leader <input data-bind="country.textSizes.leader" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.leader"></output></label>
+            <label>Party <input data-bind="country.textSizes.party" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.party"></output></label>
+            <label>Ideology <input data-bind="country.textSizes.ideology" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.ideology"></output></label>
+            <label>Election / status <input data-bind="country.textSizes.election" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.election"></output></label>
+            <label>National focus <input data-bind="country.textSizes.focus" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.focus"></output></label>
+          </details>
+
           <label class="range-row">Focus progress <input data-bind="country.focusProgress" type="range" min="0" max="100" step="1"><output id="focusProgressOut"></output></label>
         </div>
 

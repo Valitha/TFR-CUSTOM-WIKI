@@ -27,3 +27,13 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
 .pie-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.pie-editor-head>div{display:grid;gap:2px}.pie-editor-head b{font-size:13px}.pie-editor-head small{color:var(--muted);font-size:11px}.pie-editor-head .ui-btn{min-height:28px;padding:4px 8px;font-size:11px}
 .pie-editor-labels,.pie-slice-row{display:grid;grid-template-columns:minmax(0,1fr) 72px 58px 24px;gap:6px;align-items:center}.pie-editor-labels{color:#8f8293;font-size:10px;padding:0 2px 4px}.pie-editor-rows{display:grid;gap:5px}.pie-slice-row input{margin:0!important;min-height:32px!important;padding:5px 6px!important}.pie-slice-row .pie-value{width:100%}.pie-slice-row .pie-color{width:100%;height:32px;padding:2px!important;border:1px solid #58475f;background:#111017}.pie-slice-row .pie-remove{text-align:center;font-size:17px;color:#b98ac9}.pie-total{text-align:right;color:var(--muted);font-size:10px;margin-top:6px}
 @media(max-width:720px){.pie-editor-labels,.pie-slice-row{grid-template-columns:minmax(0,1fr) 64px 50px 22px}.pie-editor-card{padding:7px}}
+
+/* v33 country maintenance: optional manual font sizing for unusually long labels */
+.text-size-card{border:1px solid var(--line);background:#100b12;margin:10px 0 13px;padding:0}
+.text-size-card summary{padding:9px 10px;color:#dca8e8;font-family:'VCROSDMONO',monospace;cursor:pointer;user-select:none}
+.text-size-card[open] summary{border-bottom:1px solid var(--line)}
+.text-size-help{padding:8px 10px 4px;color:var(--muted);font-size:11px;line-height:1.4}
+.text-size-card label{display:grid;grid-template-columns:112px minmax(0,1fr) 44px;align-items:center;gap:8px;margin:0!important;padding:6px 10px;color:#d7cad9;font-size:12px}
+.text-size-card label input[type="range"]{width:100%;accent-color:var(--purple)}
+.text-size-card output{text-align:right;color:var(--orange);font-size:11px}
+@media(max-width:720px){.text-size-card label{grid-template-columns:104px minmax(0,1fr) 42px;padding:7px 8px}}

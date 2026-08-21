@@ -27,6 +27,15 @@ const DEFAULTS = {
     election: 'Next election: Unknown',
     focusText: 'Unknown National Focus',
     focusProgress: 35,
+    textSizes: {
+      country: 16,
+      faction: 14,
+      leader: 15,
+      party: 15,
+      ideology: 15,
+      election: 14,
+      focus: 14
+    },
     ideologySlices: [
       { label: 'Primary', value: 45, color: '#d94f91' },
       { label: 'Secondary', value: 25, color: '#e3c94f' },
@@ -144,7 +153,13 @@ function bindInputs(){
     });
   });
 }
-function updateOutputs(){ $('#focusProgressOut').textContent=`${state.country.focusProgress}%`; }
+function updateOutputs(){
+  $('#focusProgressOut').textContent=`${state.country.focusProgress}%`;
+  $$('[data-size-output]').forEach(out=>{
+    const value=getPath(state,out.dataset.sizeOutput);
+    out.textContent=`${Number(value)||0}px`;
+  });
+}
 
 async function handleAssetInput(key, input){
   const file=input.files?.[0]; if(!file) return;
@@ -205,7 +220,12 @@ function setCanvas(w,h,title){
 }
 
 async function renderCountry(seq){
-  setCanvas(524,248,'Country'); ctx.clearRect(0,0,524,248);
+  setCanvas(524,248,'Country');
+  ctx.clearRect(0,0,524,248);
+  // The CSS canvas background is not part of an exported PNG. Paint the
+  // country canvas itself so exports remain an opaque black HOI4 panel.
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,524,248);
   const imgs=await Promise.all([
     loadImage(template('diplo_upper_win_bg.png')),loadImage(template('diplo_top_bg_diplo_tab.png')),loadImage(template('Leader_Background.png')),loadImage(template('diplo_leader_frame.png')),loadImage(template('flag_overlay.png')),loadImage(template('pol_goal_progress_frame.png')),loadImage(template('pol_goal_progress.png')),loadImage(template('diplo_goal_button.png')),loadImage(template('bck_shadow.png')),loadImage(template('pol_piechart_overlay.png')),
     loadImage(assetUrls.flag),loadImage(assetUrls.leader),loadImage(assetUrls.focus),loadImage(state.country.ideologyIcon),loadImage(state.country.factionIcon)
@@ -246,14 +266,22 @@ async function renderCountry(seq){
   }
 
   ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
+  const ts=state.country.textSizes||DEFAULTS.country.textSizes;
   ctx.fillStyle='#d7d7d7';ctx.textAlign='left';ctx.textBaseline='top';
-  let size=fitText(state.country.country,280,16,10);ctx.font=textFont(size,true);ctx.fillText(state.country.country,230,8);
-  size=fitText(state.country.faction,260,14,9);ctx.font=textFont(size,true);ctx.fillText(state.country.faction,230,28);
-  size=fitText(state.country.leader,270,15,9);ctx.font=textFont(size,true);ctx.fillText(state.country.leader,230,48);
-  ctx.font=textFont(fitText(state.country.party,270,15,9),true);ctx.fillText(state.country.party,238,91);
-  ctx.font=textFont(fitText(state.country.ideologyText,270,15,9),true);ctx.fillText(state.country.ideologyText,238,113);
-  ctx.font=textFont(fitText(state.country.election,270,14,9),true);ctx.fillStyle='#e7b676';ctx.fillText(state.country.election,238,135);
-  ctx.fillStyle='#d7d7d7';ctx.textAlign='center';ctx.font=textFont(fitText(state.country.focusText,250,14,8),true);ctx.fillText(state.country.focusText,374,198,250);
+  // Keep the three top lines clear of the faction emblem at the right edge.
+  let size=fitText(state.country.country,210,Number(ts.country)||16,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.country,230,8);
+  size=fitText(state.country.faction,210,Number(ts.faction)||14,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.faction,230,28);
+  size=fitText(state.country.leader,210,Number(ts.leader)||15,8,true);ctx.font=textFont(size,true);ctx.fillText(state.country.leader,230,48);
+  ctx.font=textFont(fitText(state.country.party,270,Number(ts.party)||15,8,true),true);ctx.fillText(state.country.party,238,91);
+  ctx.font=textFont(fitText(state.country.ideologyText,270,Number(ts.ideology)||15,8,true),true);ctx.fillText(state.country.ideologyText,238,113);
+  ctx.font=textFont(fitText(state.country.election,270,Number(ts.election)||14,8,true),true);ctx.fillStyle='#e7b676';ctx.fillText(state.country.election,238,135);
+
+  // Center against the actual magenta inner focus rectangle (not the full asset).
+  // diplo_goal_button.png is drawn at x=230.5,y=170 and its inner box center is
+  // x=141,y=30.5 inside the source image -> canvas center 371.5,200.5.
+  ctx.fillStyle='#d7d7d7';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font=textFont(fitText(state.country.focusText,238,Number(ts.focus)||14,8,true),true);
+  ctx.fillText(state.country.focusText,371.5,200.5,238);
   ctx.shadowColor='transparent';
 }
 async function renderEvent(seq){
