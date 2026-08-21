@@ -49,3 +49,22 @@
 .tfr-route-flag{overflow:visible}
 .tfr-route-flag-image{inset:4px!important;width:38px!important;height:21px!important;object-fit:fill!important;z-index:1}
 .tfr-route-flag-frame{inset:0!important;width:46px!important;height:29px!important;object-fit:fill!important;z-index:2}
+
+/* V34 — compact mobile page search inside the Preview title row. */
+.tfr-mobile-search-toggle,.tfr-mobile-search-wrap{display:none}
+@media(max-width:760px){
+  .tfr-title-row{min-height:46px;align-items:flex-start}
+  .tfr-title-row h1{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+  .tfr-mobile-search-toggle{display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;margin-left:auto;border:0;background:transparent;color:#fff;padding:8px}
+  .tfr-mobile-search-toggle svg{width:24px;height:24px;display:block;pointer-events:none}
+  .tfr-mobile-search-wrap{position:relative;display:none;width:100%;max-width:none}
+  .tfr-mobile-search-wrap .tfr-search-row{width:100%}
+  .tfr-mobile-search-wrap .tfr-search{height:42px;border-color:var(--tfr-purple);background:#0d0910;padding:0 12px;font-size:16px}
+  .tfr-mobile-search-close{width:44px;height:42px;border:1px solid var(--tfr-purple);border-left:0;background:#171019;color:#fff;font-size:24px;line-height:1}
+  .tfr-mobile-search-wrap .tfr-search-results{top:44px;left:0;right:0;z-index:180;max-height:min(55vh,420px);overflow:auto;border-color:var(--tfr-purple)}
+  .tfr-mobile-search-wrap .tfr-search-result{min-height:52px;padding:9px 12px;font-size:15px}
+  .tfr-title-row.mobile-search-open>.tfr-toc-inline-wrap,
+  .tfr-title-row.mobile-search-open>h1,
+  .tfr-title-row.mobile-search-open>.tfr-mobile-search-toggle{display:none!important}
+  .tfr-title-row.mobile-search-open>.tfr-mobile-search-wrap{display:block!important}
+}
