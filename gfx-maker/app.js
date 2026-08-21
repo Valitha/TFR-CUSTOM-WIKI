@@ -70,6 +70,9 @@ let renderSeq = 0;
 let manifest = null;
 let iconMode = 'ideology';
 const imageCache = new Map();
+const animatedAssets=new Set();
+const animatedDurations=new Map();
+let animationLoopId=0,animationRenderBusy=false,animationLastPaint=0;
 const assetUrls = {
   flag: placeholder('flag_eu.png'),
   leader: placeholder('leader_unknown.png'),
@@ -151,13 +154,15 @@ async function dbGet(key){ const db=await openDB(); return new Promise((res,rej)
 async function dbSet(key,val){ const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(val,key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);}); }
 async function dbDelete(key){ const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).delete(key);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);}); }
 
+function gifDurationMsFromBytes(bytes){let total=0,frames=0;if(bytes)for(let i=0;i+7<bytes.length;i++)if(bytes[i]===0x21&&bytes[i+1]===0xF9&&bytes[i+2]===0x04){let delay=(bytes[i+4]|(bytes[i+5]<<8))*10;if(delay<20)delay=100;total+=delay;frames++}return Math.max(1200,Math.min(6000,frames&&total?total:3000))}
+async function noteAssetAnimation(key,blob){if(blob?.type?.toLowerCase()==='image/gif'){animatedAssets.add(key);try{animatedDurations.set(key,gifDurationMsFromBytes(new Uint8Array(await blob.arrayBuffer())))}catch{animatedDurations.set(key,3000)}}else{animatedAssets.delete(key);animatedDurations.delete(key)}ensureAnimationLoop()}
 function setObjectUrl(key, blob){
   if(objectUrls.has(key)) URL.revokeObjectURL(objectUrls.get(key));
   const url=URL.createObjectURL(blob); objectUrls.set(key,url); assetUrls[key]=url;
 }
 async function restoreAssets(){
   for(const key of Object.keys(assetUrls)){
-    try{ const blob=await dbGet(key); if(blob) setObjectUrl(key,blob); }catch(e){ console.warn('asset restore failed',key,e); }
+    try{ const blob=await dbGet(key); if(blob){setObjectUrl(key,blob);await noteAssetAnimation(key,blob)} }catch(e){ console.warn('asset restore failed',key,e); }
   }
   updateThumbs(); scheduleRender();
 }
@@ -187,7 +192,7 @@ function updateOutputs(){
 async function handleAssetInput(key, input){
   const file=input.files?.[0]; if(!file) return;
   if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); input.value=''; return; }
-  try{ await dbSet(key,file); setObjectUrl(key,file); imageCache.clear(); updateThumbs(); scheduleRender(); }
+  try{ await dbSet(key,file); setObjectUrl(key,file); await noteAssetAnimation(key,file); imageCache.clear(); updateThumbs(); scheduleRender(); }
   catch(e){ alert('Could not store that image locally.'); console.error(e); }
   input.value='';
 }
@@ -199,7 +204,7 @@ const assetDefaults={
 async function clearAsset(key){
   await dbDelete(key).catch(()=>{});
   if(objectUrls.has(key)){URL.revokeObjectURL(objectUrls.get(key));objectUrls.delete(key);}
-  assetUrls[key]=assetDefaults[key]; imageCache.clear(); updateThumbs(); scheduleRender();
+  assetUrls[key]=assetDefaults[key]; animatedAssets.delete(key);animatedDurations.delete(key);imageCache.clear(); updateThumbs(); scheduleRender();
 }
 
 function updateThumbs(){
@@ -378,13 +383,18 @@ function addPieSlice(){
   saveState();renderPieEditor();scheduleRender();
 }
 
+function animatedKeysForTool(tool=activeTool){return({country:['flag','leader','focus'],event:['event'],news:['news'],super:['super']}[tool]||[])}
+function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
+function activeAnimationDuration(){let d=0;for(const k of animatedKeysForTool())if(animatedAssets.has(k))d=Math.max(d,animatedDurations.get(k)||3000);return Math.max(1200,Math.min(6000,d||3000))}
+function ensureAnimationLoop(){if(animationLoopId||!activeToolHasAnimation())return;const tick=now=>{animationLoopId=0;if(!activeToolHasAnimation())return;if(!document.hidden&&now-animationLastPaint>=70&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
 function scheduleRender(){
   const seq=++renderSeq;
   requestAnimationFrame(()=>{
     if(seq!==renderSeq)return;
     const fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];
-    fn?.(seq).catch(console.error);
+    fn?.(seq).catch(console.error).finally(ensureAnimationLoop);
   });
+  ensureAnimationLoop();
 }
 
 function switchTool(tool){
@@ -413,13 +423,24 @@ async function renderIconGrid(search){
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+function exportModePopup(){return new Promise(resolve=>{const dlg=document.createElement('dialog');dlg.className='disclaimer-dialog';dlg.innerHTML='<div class="disclaimer-card"><h2>Export image</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="ui-btn" type="button" data-mode="static">Static image</button><button class="ui-btn primary" type="button" data-mode="animated">Animated image</button></div></div>';document.body.appendChild(dlg);const done=v=>{dlg.close();dlg.remove();resolve(v)};dlg.querySelector('[data-mode="static"]').onclick=()=>done('static');dlg.querySelector('[data-mode="animated"]').onclick=()=>done('animated');dlg.addEventListener('cancel',e=>{e.preventDefault();done(null)});dlg.addEventListener('click',e=>{if(e.target===dlg)done(null)});dlg.showModal()})}
+let __apngCrcTable=null;
+function apngCrcTable(){if(__apngCrcTable)return __apngCrcTable;const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return __apngCrcTable=t}
+function apngCrc32(bytes){let c=0xFFFFFFFF,t=apngCrcTable();for(const b of bytes)c=t[(c^b)&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function apngU32(n){return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255])}
+function apngU16(n){return new Uint8Array([(n>>>8)&255,n&255])}
+function apngJoin(...parts){const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let off=0;for(const part of parts){out.set(part,off);off+=part.length}return out}
+function apngChunk(type,data=new Uint8Array()){const t=new TextEncoder().encode(type),crc=apngU32(apngCrc32(apngJoin(t,data)));return apngJoin(apngU32(data.length),t,data,crc)}
+async function apngDeflate(bytes){if(typeof CompressionStream==='undefined')throw new Error('Animated image export is unavailable in this browser.');return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer())}
+async function encodeApngFromCanvas(firstCanvas,frameCount,delayMs,getFrame){const w=firstCanvas.width,h=firstCanvas.height,chunks=[new Uint8Array([137,80,78,71,13,10,26,10]),apngChunk('IHDR',apngJoin(apngU32(w),apngU32(h),new Uint8Array([8,6,0,0,0]))),apngChunk('acTL',apngJoin(apngU32(frameCount),apngU32(0)))];let seq=0;for(let i=0;i<frameCount;i++){const c=i===0?firstCanvas:await getFrame(i),rgba=c.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,row=w*4,raw=new Uint8Array((row+1)*h);for(let y=0;y<h;y++){const o=y*(row+1);raw[o]=0;raw.set(rgba.subarray(y*row,(y+1)*row),o+1)}const compressed=await apngDeflate(raw),delay=Math.max(1,Math.min(65535,Math.round(delayMs)));chunks.push(apngChunk('fcTL',apngJoin(apngU32(seq++),apngU32(w),apngU32(h),apngU32(0),apngU32(0),apngU16(delay),apngU16(1000),new Uint8Array([0,0]))));if(i===0)chunks.push(apngChunk('IDAT',compressed));else chunks.push(apngChunk('fdAT',apngJoin(apngU32(seq++),compressed)))}chunks.push(apngChunk('IEND'));return new Blob(chunks,{type:'image/png'})}
+function downloadImageBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.download=filename;a.href=url;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+async function renderActiveNow(){const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];if(fn)await fn(seq)}
 async function exportPNG(){
-  const seq=++renderSeq;
-  const fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];
-  if(fn) await fn(seq);
-  const a=document.createElement('a'); const safe=activeTool.replace(/[^a-z0-9_-]+/gi,'-'); a.download=`tfr-${safe}-gfx.png`; a.href=canvas.toDataURL('image/png'); a.click();
+  const mode=activeToolHasAnimation()?await exportModePopup():'static';if(!mode)return;const safe=activeTool.replace(/[^a-z0-9_-]+/gi,'-');
+  await renderActiveNow();
+  if(mode==='static'){const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(blob)downloadImageBlob(blob,`tfr-${safe}-gfx.png`);return}
+  const delay=100,duration=activeAnimationDuration(),frameCount=Math.max(2,Math.min(60,Math.ceil(duration/delay))),copy=document.createElement('canvas');copy.width=canvas.width;copy.height=canvas.height;copy.getContext('2d').drawImage(canvas,0,0);const started=performance.now();const blob=await encodeApngFromCanvas(copy,frameCount,delay,async i=>{const target=started+i*delay,wait=target-performance.now();if(wait>0)await new Promise(r=>setTimeout(r,wait));await renderActiveNow();const c=document.createElement('canvas');c.width=canvas.width;c.height=canvas.height;c.getContext('2d').drawImage(canvas,0,0);return c});downloadImageBlob(blob,`tfr-${safe}-gfx-animated.png`);
 }
-
 async function resetTool(){
   const fresh=cloneDefaults(); state[activeTool]=fresh[activeTool];
   const keys={country:['flag','leader','focus'],event:['event'],news:['news'],super:['super']}[activeTool]||[];
