@@ -1136,13 +1136,13 @@ body.mobile-pages-open{overflow:hidden}
   .mobile-export-options .ui-btn{width:100%;min-height:48px;text-align:center}
 }
 
-/* V37 — smooth reversible swipe navigation + readable mobile infobox rows. */
+/* V38 — low-latency reversible swipe navigation + readable mobile infobox rows. */
 @media(max-width:760px){
   html,body{overscroll-behavior-x:none}
 
   /* Drawer follows the thumb rather than snapping at touchend. */
   body.mobile-pages-gesture{overflow:hidden}
-  .page-sidebar.mobile-gesture-dragging{transition:none!important;will-change:transform}
+  .page-sidebar.mobile-gesture-dragging{transition:none!important;will-change:transform;-webkit-backface-visibility:hidden;backface-visibility:hidden}
   .mobile-drawer-backdrop.mobile-gesture-visible{display:block!important}
   .mobile-drawer-backdrop.mobile-gesture-dragging{transition:none!important;will-change:opacity}
 
@@ -1161,6 +1161,9 @@ body.mobile-pages-open{overflow:hidden}
     overflow:hidden!important;
     background:#080309!important;
     box-shadow:-18px 0 34px rgba(0,0,0,.42);
+    -webkit-backface-visibility:hidden!important;
+    backface-visibility:hidden!important;
+    transform-style:preserve-3d!important;
   }
   body.mobile-gesture-to-preview #previewPane .preview-toolbar,
   body.mobile-gesture-to-preview #mobileReturnEdit{display:none!important}
@@ -1208,6 +1211,9 @@ body.mobile-pages-open{overflow:hidden}
     margin:0!important;
     overflow:hidden!important;
     box-shadow:-18px 0 34px rgba(0,0,0,.42);
+    -webkit-backface-visibility:hidden!important;
+    backface-visibility:hidden!important;
+    transform-style:preserve-3d!important;
   }
   body.mobile-gesture-from-preview #mobileReturnEdit{display:none!important}
 
