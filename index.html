@@ -166,6 +166,10 @@
                   <button id="leadImageClear" class="ui-btn danger subtle" type="button">Remove</button>
                 </div>
               </div>
+              <label class="lead-image-quote-field">
+                <span>Image quote</span>
+                <textarea id="leadImageQuote" rows="4" placeholder="Optional quote attached to this image"></textarea>
+              </label>
               <details class="advanced">
                 <summary>Advanced</summary>
                 <div class="advanced-grid">
@@ -318,7 +322,7 @@
     if(modal && localStorage.getItem(key)!=='accepted') modal.hidden=false;
     openButtons.forEach(btn=>btn.addEventListener('click',openDisclaimer));
     if(accept){
-      accept.addEventListener('pointerdown',function(){if(window.__TFR_V7_BOOTED)return;try{clickSound.currentTime=0;clickSound.play().catch(()=>{});}catch{}});
+      accept.addEventListener('pointerdown',function(){if(window.__TFR_APP_BOOTED)return;try{clickSound.currentTime=0;clickSound.play().catch(()=>{});}catch{}});
       accept.addEventListener('click',function(){localStorage.setItem(key,'accepted');modal.hidden=true;});
     }
   })();
