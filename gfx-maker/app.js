@@ -36,6 +36,11 @@ const DEFAULTS = {
       election: 14,
       focus: 14
     },
+    transforms: {
+      flag: { x: 0, y: 0, size: 100 },
+      leader: { x: 0, y: 0, size: 100 },
+      focus: { x: 0, y: 0, size: 100 }
+    },
     ideologySlices: [
       { label: 'Primary', value: 45, color: '#d94f91' },
       { label: 'Secondary', value: 25, color: '#e3c94f' },
@@ -50,17 +55,20 @@ const DEFAULTS = {
   event: {
     title: 'Major Event',
     body: 'Type event text here...',
-    button: 'We will remember this.'
+    button: 'We will remember this.',
+    transform: { x: 0, y: 0, size: 100 }
   },
   news: {
     title: 'Breaking News',
     body: 'Type news text here...',
-    button: 'The world watches.'
+    button: 'The world watches.',
+    transform: { x: 0, y: 0, size: 100 }
   },
   super: {
     title: 'A New Era',
     motto: 'Type quote or motto here...\n— Attribution',
-    button: 'Continue'
+    button: 'Continue',
+    transform: { x: 0, y: 0, size: 100 }
   }
 };
 
@@ -187,6 +195,10 @@ function updateOutputs(){
     const value=getPath(state,out.dataset.sizeOutput);
     out.textContent=`${Number(value)||0}px`;
   });
+  $$('[data-transform-output]').forEach(out=>{
+    const value=Number(getPath(state,out.dataset.transformOutput))||0;
+    out.textContent=`${value}%`;
+  });
 }
 
 async function handleAssetInput(key, input){
@@ -201,15 +213,23 @@ const assetDefaults={
   flag:placeholder('flag_eu.png'), leader:placeholder('leader_unknown.png'), focus:placeholder('focus_unknown.png'),
   event:placeholder('major_news.png'), news:placeholder('local_news.png'), super:placeholder('super_event.png')
 };
+const transformPathByAsset={flag:'country.transforms.flag',leader:'country.transforms.leader',focus:'country.transforms.focus',event:'event.transform',news:'news.transform',super:'super.transform'};
+function resetAssetTransform(key){
+  const path=transformPathByAsset[key]; if(!path)return;
+  const fresh=getPath(DEFAULTS,path); if(fresh)setPath(state,path,JSON.parse(JSON.stringify(fresh)));
+}
 async function clearAsset(key){
   await dbDelete(key).catch(()=>{});
   if(objectUrls.has(key)){URL.revokeObjectURL(objectUrls.get(key));objectUrls.delete(key);}
-  assetUrls[key]=assetDefaults[key]; animatedAssets.delete(key);animatedDurations.delete(key);imageCache.clear(); updateThumbs(); scheduleRender();
+  assetUrls[key]=assetDefaults[key]; animatedAssets.delete(key);animatedDurations.delete(key); resetAssetTransform(key); saveState(); imageCache.clear(); updateThumbs(); bindValuesOnly(); updateOutputs(); scheduleRender();
 }
 
 function updateThumbs(){
   const map={flag:'flagThumb',leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb'};
-  for(const [key,id] of Object.entries(map)) $('#'+id).src=assetUrls[key];
+  for(const [key,id] of Object.entries(map)){
+    $('#'+id).src=assetUrls[key];
+    const clear=$(`[data-clear-asset="${key}"]`); if(clear)clear.hidden=!objectUrls.has(key);
+  }
   $('#ideologyThumb').src=state.country.ideologyIcon; $('#ideologyName').textContent=state.country.ideologyIconName||'Selected ideology';
   $('#factionThumb').src=state.country.factionIcon; $('#factionName').textContent=state.country.factionIconName||'Selected faction';
 }
@@ -220,9 +240,17 @@ function loadImage(src){
   const p=new Promise(resolve=>{ const im=new Image(); im.decoding='async'; im.onload=()=>resolve(im); im.onerror=()=>resolve(null); im.src=src; });
   imageCache.set(src,p); return p;
 }
+function cleanTransform(t){return{x:Number(t?.x)||0,y:Number(t?.y)||0,size:Math.max(10,Number(t?.size)||100)}}
 function drawCover(im,x,y,w,h){ if(!im)return; const s=Math.max(w/im.width,h/im.height); const sw=w/s,sh=h/s,sx=(im.width-sw)/2,sy=(im.height-sh)/2; ctx.drawImage(im,sx,sy,sw,sh,x,y,w,h); }
+function drawCoverTransform(im,x,y,w,h,t){
+  if(!im)return; const tr=cleanTransform(t),base=Math.max(w/im.width,h/im.height),s=base*(tr.size/100),dw=im.width*s,dh=im.height*s,cx=x+w/2+(tr.x/100)*w,cy=y+h/2+(tr.y/100)*h;
+  ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(im,cx-dw/2,cy-dh/2,dw,dh);ctx.restore();
+}
 function drawContain(im,x,y,w,h){ if(!im)return; const s=Math.min(w/im.width,h/im.height); const dw=im.width*s,dh=im.height*s; ctx.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh); }
 function drawCentered(im,cx,cy,scale=1,maxW=Infinity,maxH=Infinity){ if(!im)return; let s=scale; if(im.width*s>maxW)s=Math.min(s,maxW/im.width); if(im.height*s>maxH)s=Math.min(s,maxH/im.height); const w=im.width*s,h=im.height*s; ctx.drawImage(im,cx-w/2,cy-h/2,w,h); }
+function drawCenteredTransform(im,cx,cy,scale=1,maxW=Infinity,maxH=Infinity,t){
+  if(!im)return; const tr=cleanTransform(t); let s=scale; if(im.width*s>maxW)s=Math.min(s,maxW/im.width); if(im.height*s>maxH)s=Math.min(s,maxH/im.height); s*=tr.size/100; const w=im.width*s,h=im.height*s,ox=(tr.x/100)*(Number.isFinite(maxW)?maxW:0),oy=(tr.y/100)*(Number.isFinite(maxH)?maxH:0); ctx.drawImage(im,cx+ox-w/2,cy+oy-h/2,w,h);
+}
 function textFont(size, display=false, weight=400){ return `${weight} ${size}px ${display?"'VCROSDMONO', monospace":"'Electrolize', Arial, sans-serif"}`; }
 function fitText(text,maxWidth,size,min=9,display=false){ let s=size; while(s>min){ctx.font=textFont(s,display); if(ctx.measureText(text).width<=maxWidth) break; s-=.5;} return s; }
 function wrapLines(text,maxWidth,font,lineLimit=999){
@@ -261,10 +289,10 @@ async function renderCountry(seq){
   const [upper,tab,leaderBg,leaderFrame,flagOverlay,progressFrame,progress,goalButton,shadow,pieOverlay,flag,leader,focus,ideology,faction]=imgs;
 
   if(leaderBg)ctx.drawImage(leaderBg,7,79,120,160);
-  drawCover(leader,7,79,120,160);
+  drawCoverTransform(leader,7,79,120,160,state.country.transforms?.leader);
   if(leaderFrame)ctx.drawImage(leaderFrame,0,70);
 
-  drawCover(flag,22,15,90,55);
+  drawCoverTransform(flag,22,15,90,55,state.country.transforms?.flag);
   if(flagOverlay)ctx.drawImage(flagOverlay,8.5,6.75,117,71.5);
 
   if(upper)ctx.drawImage(upper,125,4);
@@ -286,7 +314,7 @@ async function renderCountry(seq){
   if(pieOverlay)drawCentered(pieOverlay,pieCx,pieCy,1);
 
   if(goalButton)ctx.drawImage(goalButton,230.5,170,285,64);
-  drawCentered(focus,182,202,.9,92,94);
+  drawCenteredTransform(focus,182,202,.9,92,94,state.country.transforms?.focus);
   if(progressFrame)ctx.drawImage(progressFrame,253.5,216);
   if(progress){
     const pw=Math.round(237*Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100);
@@ -321,13 +349,13 @@ async function renderEvent(seq){
   ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='top';ctx.font=textFont(fitText(state.event.title,500,23,14),true);ctx.fillText(state.event.title,302,78,500);
   drawWrapped(state.event.body,43,120,520,21,bodyFont,'#000','left',18);
   const buttonY=190+tileCount*80;if(buttonBg)ctx.drawImage(buttonBg,130,buttonY);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=textFont(fitText(state.event.button,320,17,11),false);ctx.fillText(state.event.button,306,buttonY+13,320);
-  const picY=bottomY+170;drawCover(pic,52,picY,500,250);if(picOverlay)ctx.drawImage(picOverlay,52,picY,500,250);
+  const picY=bottomY+170;drawCoverTransform(pic,52,picY,500,250,state.event.transform);if(picOverlay)ctx.drawImage(picOverlay,52,picY,500,250);
 }
 
 async function renderNews(seq){
   setCanvas(713,935,'Local News');ctx.clearRect(0,0,713,935);
   const [bg,picOverlay,buttonBg,pic]=await Promise.all([loadImage(template('news/event_news_bg.png')),loadImage(template('news/event_news_pic_overlay.png')),loadImage(template('news/event_option_entry.png')),loadImage(assetUrls.news)]); if(seq!==renderSeq)return;
-  if(bg)ctx.drawImage(bg,0,0); drawCover(pic,150,164,400,150); if(picOverlay)ctx.drawImage(picOverlay,142,157,415,155);
+  if(bg)ctx.drawImage(bg,0,0); drawCoverTransform(pic,150,164,400,150,state.news.transform); if(picOverlay)ctx.drawImage(picOverlay,142,157,415,155);
   ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='top';ctx.font=textFont(fitText(state.news.title,500,28,16),true);ctx.fillText(state.news.title,356,119,500);
   drawWrapped(state.news.body,75,330,560,22,textFont(17,false),'#000','left',16);
   if(buttonBg)ctx.drawImage(buttonBg,180,700);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=textFont(fitText(state.news.button,320,17,11),false);ctx.fillText(state.news.button,356,713,320);
@@ -336,7 +364,7 @@ async function renderNews(seq){
 async function renderSuper(seq){
   setCanvas(1001,639,'Super Event');ctx.clearRect(0,0,1001,639);
   const [frame,space,pic]=await Promise.all([loadImage(template('super_frame.png')),loadImage(template('spacebar.png')),loadImage(assetUrls.super)]); if(seq!==renderSeq)return;
-  drawCover(pic,5,30,982,594);
+  drawCoverTransform(pic,5,30,982,594,state.super.transform);
   if(frame)ctx.drawImage(frame,0,0);
 
   ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;ctx.fillStyle='#fff';ctx.textAlign='center';

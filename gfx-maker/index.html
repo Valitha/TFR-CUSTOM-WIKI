@@ -37,7 +37,6 @@
       <button class="tool-tab" data-tool="event" type="button">Major Event</button>
       <button class="tool-tab" data-tool="news" type="button">Local News</button>
       <button class="tool-tab" data-tool="super" type="button">Super Event</button>
-      <div class="side-note">Your uploaded pictures are stored locally in this browser. Nothing is uploaded to a server.</div>
     </aside>
 
     <section class="workspace">
@@ -80,13 +79,13 @@
 
           <div class="asset-grid">
             <div class="asset-card">
-              <span>Flag</span><img id="flagThumb" alt="Flag preview"><label class="ui-btn file-btn">Upload image<input id="flagFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="flag" type="button">Use placeholder</button>
+              <span>Flag</span><div class="asset-preview"><img id="flagThumb" alt="Flag preview"><button class="asset-clear-x" data-clear-asset="flag" type="button" aria-label="Remove flag image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="flagFile" type="file" accept="image/*"></label>
             </div>
             <div class="asset-card">
-              <span>Leader</span><img id="leaderThumb" alt="Leader preview"><label class="ui-btn file-btn">Upload image<input id="leaderFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="leader" type="button">Use placeholder</button>
+              <span>Leader</span><div class="asset-preview"><img id="leaderThumb" alt="Leader preview"><button class="asset-clear-x" data-clear-asset="leader" type="button" aria-label="Remove leader image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="leaderFile" type="file" accept="image/*"></label>
             </div>
             <div class="asset-card">
-              <span>National focus</span><img id="focusThumb" alt="Focus preview"><label class="ui-btn file-btn">Upload image<input id="focusFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="focus" type="button">Use placeholder</button>
+              <span>National focus</span><div class="asset-preview"><img id="focusThumb" alt="Focus preview"><button class="asset-clear-x" data-clear-asset="focus" type="button" aria-label="Remove focus image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="focusFile" type="file" accept="image/*"></label>
             </div>
           </div>
 
@@ -96,22 +95,32 @@
           </div>
 
           <div class="pie-editor-card">
-            <div class="pie-editor-head"><div><b>Ideology pie chart</b><small>Set the colours and relative shares.</small></div><button id="addPieSlice" class="ui-btn subtle" type="button">+ Slice</button></div>
+            <div class="pie-editor-head"><div><b>Ideology pie chart</b></div><button id="addPieSlice" class="ui-btn subtle" type="button">+ Slice</button></div>
             <div class="pie-editor-labels"><span>Name</span><span>Share</span><span>Colour</span><span></span></div>
             <div id="pieEditorRows" class="pie-editor-rows"></div>
             <div id="pieTotal" class="pie-total"></div>
           </div>
 
-          <details class="text-size-card">
-            <summary>Text sizes</summary>
-            <div class="text-size-help">Shrink unusually long labels or enlarge short ones. Text still auto-fits to avoid covering the GFX icons.</div>
-            <label>Country <input data-bind="country.textSizes.country" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.country"></output></label>
-            <label>Faction <input data-bind="country.textSizes.faction" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.faction"></output></label>
-            <label>Leader <input data-bind="country.textSizes.leader" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.leader"></output></label>
-            <label>Party <input data-bind="country.textSizes.party" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.party"></output></label>
-            <label>Ideology <input data-bind="country.textSizes.ideology" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.ideology"></output></label>
-            <label>Election / status <input data-bind="country.textSizes.election" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.election"></output></label>
-            <label>National focus <input data-bind="country.textSizes.focus" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.focus"></output></label>
+          <details class="advanced-card">
+            <summary>Advanced</summary>
+            <div class="advanced-body">
+              <div class="advanced-subtitle">Image placement</div>
+              <div class="transform-stack">
+                <div class="transform-group"><b>Flag</b><label>X <input data-bind="country.transforms.flag.x" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.flag.x"></output></label><label>Y <input data-bind="country.transforms.flag.y" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.flag.y"></output></label><label>Size <input data-bind="country.transforms.flag.size" type="range" min="50" max="250" step="1"><output data-transform-output="country.transforms.flag.size"></output></label></div>
+                <div class="transform-group"><b>Leader</b><label>X <input data-bind="country.transforms.leader.x" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.leader.x"></output></label><label>Y <input data-bind="country.transforms.leader.y" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.leader.y"></output></label><label>Size <input data-bind="country.transforms.leader.size" type="range" min="50" max="250" step="1"><output data-transform-output="country.transforms.leader.size"></output></label></div>
+                <div class="transform-group"><b>National focus</b><label>X <input data-bind="country.transforms.focus.x" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.focus.x"></output></label><label>Y <input data-bind="country.transforms.focus.y" type="range" min="-100" max="100" step="1"><output data-transform-output="country.transforms.focus.y"></output></label><label>Size <input data-bind="country.transforms.focus.size" type="range" min="50" max="250" step="1"><output data-transform-output="country.transforms.focus.size"></output></label></div>
+              </div>
+              <div class="advanced-subtitle">Text sizes</div>
+              <div class="text-size-list">
+                <label>Country <input data-bind="country.textSizes.country" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.country"></output></label>
+                <label>Faction <input data-bind="country.textSizes.faction" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.faction"></output></label>
+                <label>Leader <input data-bind="country.textSizes.leader" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.leader"></output></label>
+                <label>Party <input data-bind="country.textSizes.party" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.party"></output></label>
+                <label>Ideology <input data-bind="country.textSizes.ideology" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.ideology"></output></label>
+                <label>Election / status <input data-bind="country.textSizes.election" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.election"></output></label>
+                <label>National focus <input data-bind="country.textSizes.focus" type="range" min="8" max="20" step="1"><output data-size-output="country.textSizes.focus"></output></label>
+              </div>
+            </div>
           </details>
 
           <label class="range-row">Focus progress <input data-bind="country.focusProgress" type="range" min="0" max="100" step="1"><output id="focusProgressOut"></output></label>
@@ -123,9 +132,10 @@
           <label>Body<textarea data-bind="event.body" rows="8" placeholder="Type text here..."></textarea></label>
           <label>Button text<input data-bind="event.button" type="text" placeholder="Type text here..."></label>
           <div class="wide-asset">
-            <img id="eventThumb" alt="Major event picture">
-            <div><b>Event picture</b><small>Upload image</small><label class="ui-btn file-btn">Upload image<input id="eventFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="event" type="button">Use placeholder</button></div>
+            <div class="wide-preview"><img id="eventThumb" alt="Major event picture"><button class="asset-clear-x" data-clear-asset="event" type="button" aria-label="Remove event image" hidden>×</button></div>
+            <div><b>Event picture</b><label class="ui-btn file-btn">Upload image<input id="eventFile" type="file" accept="image/*"></label></div>
           </div>
+          <details class="advanced-card"><summary>Advanced</summary><div class="advanced-body"><div class="transform-group"><b>Event picture</b><label>X <input data-bind="event.transform.x" type="range" min="-100" max="100" step="1"><output data-transform-output="event.transform.x"></output></label><label>Y <input data-bind="event.transform.y" type="range" min="-100" max="100" step="1"><output data-transform-output="event.transform.y"></output></label><label>Size <input data-bind="event.transform.size" type="range" min="50" max="250" step="1"><output data-transform-output="event.transform.size"></output></label></div></div></details>
         </div>
 
         <div class="tool-controls" data-controls="news">
@@ -134,9 +144,10 @@
           <label>Body<textarea data-bind="news.body" rows="10" placeholder="Type text here..."></textarea></label>
           <label>Button text<input data-bind="news.button" type="text" placeholder="Type text here..."></label>
           <div class="wide-asset">
-            <img id="newsThumb" alt="Local news picture">
-            <div><b>News picture</b><small>Upload image</small><label class="ui-btn file-btn">Upload image<input id="newsFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="news" type="button">Use placeholder</button></div>
+            <div class="wide-preview"><img id="newsThumb" alt="Local news picture"><button class="asset-clear-x" data-clear-asset="news" type="button" aria-label="Remove news image" hidden>×</button></div>
+            <div><b>News picture</b><label class="ui-btn file-btn">Upload image<input id="newsFile" type="file" accept="image/*"></label></div>
           </div>
+          <details class="advanced-card"><summary>Advanced</summary><div class="advanced-body"><div class="transform-group"><b>News picture</b><label>X <input data-bind="news.transform.x" type="range" min="-100" max="100" step="1"><output data-transform-output="news.transform.x"></output></label><label>Y <input data-bind="news.transform.y" type="range" min="-100" max="100" step="1"><output data-transform-output="news.transform.y"></output></label><label>Size <input data-bind="news.transform.size" type="range" min="50" max="250" step="1"><output data-transform-output="news.transform.size"></output></label></div></div></details>
         </div>
 
         <div class="tool-controls" data-controls="super">
@@ -145,9 +156,10 @@
           <label>Quote / motto<textarea data-bind="super.motto" rows="5" placeholder="Type text here..."></textarea></label>
           <label>Button text<input data-bind="super.button" type="text" placeholder="Type text here..."></label>
           <div class="wide-asset">
-            <img id="superThumb" alt="Super event picture">
-            <div><b>Super-event picture</b><small>Upload image</small><label class="ui-btn file-btn">Upload image<input id="superFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="super" type="button">Use placeholder</button></div>
+            <div class="wide-preview"><img id="superThumb" alt="Super event picture"><button class="asset-clear-x" data-clear-asset="super" type="button" aria-label="Remove super-event image" hidden>×</button></div>
+            <div><b>Super-event picture</b><label class="ui-btn file-btn">Upload image<input id="superFile" type="file" accept="image/*"></label></div>
           </div>
+          <details class="advanced-card"><summary>Advanced</summary><div class="advanced-body"><div class="transform-group"><b>Super-event picture</b><label>X <input data-bind="super.transform.x" type="range" min="-100" max="100" step="1"><output data-transform-output="super.transform.x"></output></label><label>Y <input data-bind="super.transform.y" type="range" min="-100" max="100" step="1"><output data-transform-output="super.transform.y"></output></label><label>Size <input data-bind="super.transform.size" type="range" min="50" max="250" step="1"><output data-transform-output="super.transform.size"></output></label></div></div></details>
         </div>
       </section>
     </section>
