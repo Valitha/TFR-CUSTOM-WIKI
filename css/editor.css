@@ -1104,3 +1104,10 @@ body.mobile-pages-open{overflow:hidden}
     padding-right:max(10px,env(safe-area-inset-right))!important;
   }
 }
+
+/* V30 — GFX Maker link + site disclaimer. */
+.workspace-tab.gfx-maker-link{display:inline-flex;align-items:center;text-decoration:none}
+.mobile-sidebar-actions .gfx-maker-mobile-link{text-decoration:none;text-align:center}
+.site-disclaimer-card{max-width:560px}
+.site-disclaimer-card p{color:var(--muted);line-height:1.55}
+.site-disclaimer-card strong{color:var(--text)}

@@ -2,7 +2,7 @@
   "id": "./",
   "name": "The Fire Rises Wiki Editor",
   "short_name": "TFR Wiki",
-  "description": "A local lore wiki editor styled after The Fire Rises Wiki.",
+  "description": "A local TFR-style lore wiki editor and fan GFX maker.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -21,6 +21,21 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "GFX Maker",
+      "short_name": "GFX Maker",
+      "description": "Open the TFR-style GFX maker",
+      "url": "./gfx-maker/",
+      "icons": [
+        {
+          "src": "./assets/app-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

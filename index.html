@@ -68,6 +68,7 @@
         <button id="mobileNewProjectBtn" class="ui-btn" type="button">New project</button>
         <button id="mobileImportBtn" class="ui-btn" type="button">Import</button>
         <button id="mobileExportBtn" class="ui-btn primary" type="button">Export HTML</button>
+        <a class="ui-btn gfx-maker-mobile-link" href="./gfx-maker/">GFX Maker</a>
       </div>
     </aside>
     <button id="mobileDrawerBackdrop" class="mobile-drawer-backdrop" type="button" aria-label="Close pages menu"></button>
@@ -88,6 +89,7 @@
         <button id="desktopPageMenuBtn" class="workspace-tab pages-tab" type="button" aria-label="Pages and project menu" aria-expanded="false">Pages</button>
         <button class="workspace-tab active" data-mode="edit" type="button">Edit</button>
         <button class="workspace-tab" data-mode="preview" type="button">Preview</button>
+        <a class="workspace-tab gfx-maker-link" href="./gfx-maker/">GFX Maker</a>
       </nav>
 
       <nav class="desktop-editor-nav" id="desktopEditorNav" aria-label="Desktop editor section">
@@ -281,11 +283,35 @@
       <div class="icon-library-actions"><button id="uploadOwnIcon" class="ui-btn subtle" type="button">Upload image</button><button id="removeChosenIcon" class="ui-btn danger subtle" type="button">No icon</button></div>
     </div>
   </div>
+
+  <div id="siteDisclaimerModal" class="modal" hidden>
+    <div class="modal-card site-disclaimer-card" role="dialog" aria-modal="true" aria-labelledby="siteDisclaimerHeading">
+      <h2 id="siteDisclaimerHeading">Unofficial fan project</h2>
+      <p>This website is an unofficial fan-made project. It is <strong>not affiliated with, endorsed by, or operated by The Fire Rises development team or The Fire Rises Wiki.</strong></p>
+      <p>Game/mod names, graphics and other referenced material belong to their respective creators and rights holders.</p>
+      <button id="acceptSiteDisclaimer" class="ui-btn primary full" type="button">Continue</button>
+    </div>
+  </div>
   <input id="iconLibraryUpload" class="offscreen-file-input" type="file" accept="image/*">
   <input id="importFile" class="offscreen-file-input" type="file" accept=".html,text/html">
   <audio id="backgroundMusic" src="./assets/Crossing_The_Styx.mp3" loop preload="auto" muted></audio>
   <div id="bootError" class="boot-error" hidden></div>
   <div id="pwaStatus" class="pwa-status" hidden role="status" aria-live="polite"></div>
+
+  <script>
+  (function(){
+    const key='tfr-fan-disclaimer-v1';
+    const modal=document.getElementById('siteDisclaimerModal');
+    const accept=document.getElementById('acceptSiteDisclaimer');
+    const clickSound=new Audio('./assets/click_province_01.wav');
+    clickSound.volume=.72;
+    if(modal && localStorage.getItem(key)!=='accepted') modal.hidden=false;
+    if(accept){
+      accept.addEventListener('pointerdown',function(){if(window.__TFR_V7_BOOTED)return;try{clickSound.currentTime=0;clickSound.play().catch(()=>{});}catch{}});
+      accept.addEventListener('click',function(){localStorage.setItem(key,'accepted');modal.hidden=true;});
+    }
+  })();
+  </script>
   <script src="./js/app.bundle.js"></script>
   <script src="./js/pwa.js"></script>
 </body>

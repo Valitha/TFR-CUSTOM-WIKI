@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080309">
+  <title>TFR GFX Maker</title>
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="Back to wiki editor">
+      <img src="../assets/tfr-logo.gif" alt="">
+      <span>TFR GFX Maker</span>
+    </a>
+    <nav class="top-actions">
+      <a class="ui-btn" href="../">Wiki Editor</a>
+      <button class="ui-btn" id="disclaimerBtn" type="button">Disclaimer</button>
+      <button class="ui-btn primary" id="exportBtn" type="button">Export PNG</button>
+    </nav>
+  </header>
+
+  <main class="app-shell">
+    <aside class="tool-sidebar" aria-label="GFX type">
+      <div class="side-title">GFX Type</div>
+      <button class="tool-tab active" data-tool="country" type="button">Country</button>
+      <button class="tool-tab" data-tool="event" type="button">Major Event</button>
+      <button class="tool-tab" data-tool="news" type="button">Local News</button>
+      <button class="tool-tab" data-tool="super" type="button">Super Event</button>
+      <div class="side-note">Your uploaded pictures are stored locally in this browser. Nothing is uploaded to a server.</div>
+    </aside>
+
+    <section class="workspace">
+      <div class="mobile-tool-select">
+        <label>GFX Type
+          <select id="mobileToolSelect">
+            <option value="country">Country</option>
+            <option value="event">Major Event</option>
+            <option value="news">Local News</option>
+            <option value="super">Super Event</option>
+          </select>
+        </label>
+      </div>
+
+      <section class="preview-panel">
+        <div class="preview-head">
+          <div>
+            <strong id="previewTitle">Country</strong>
+            <span id="previewSize">524 × 248</span>
+          </div>
+          <button id="resetToolBtn" class="ui-btn subtle" type="button">Reset this GFX</button>
+        </div>
+        <div class="canvas-stage" id="canvasStage">
+          <canvas id="gfxCanvas" width="524" height="248"></canvas>
+        </div>
+      </section>
+
+      <section class="controls-panel" id="controlsPanel">
+        <div class="tool-controls active" data-controls="country">
+          <div class="section-title">Country overview</div>
+          <div class="field-grid two">
+            <label>Country name<input data-bind="country.country" type="text" placeholder="Type text here..."></label>
+            <label>Leader name<input data-bind="country.leader" type="text" placeholder="Type text here..."></label>
+            <label>Faction name<input data-bind="country.faction" type="text" placeholder="Type text here..."></label>
+            <label>Party<input data-bind="country.party" type="text" placeholder="Type text here..."></label>
+            <label>Ideology name<input data-bind="country.ideologyText" type="text" placeholder="Type text here..."></label>
+            <label>Election / status<input data-bind="country.election" type="text" placeholder="Type text here..."></label>
+            <label class="span-two">National focus name<input data-bind="country.focusText" type="text" placeholder="Type text here..."></label>
+          </div>
+
+          <div class="asset-grid">
+            <div class="asset-card">
+              <span>Flag</span><img id="flagThumb" alt="Flag preview"><label class="ui-btn file-btn">Upload image<input id="flagFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="flag" type="button">Use placeholder</button>
+            </div>
+            <div class="asset-card">
+              <span>Leader</span><img id="leaderThumb" alt="Leader preview"><label class="ui-btn file-btn">Upload image<input id="leaderFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="leader" type="button">Use placeholder</button>
+            </div>
+            <div class="asset-card">
+              <span>National focus</span><img id="focusThumb" alt="Focus preview"><label class="ui-btn file-btn">Upload image<input id="focusFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="focus" type="button">Use placeholder</button>
+            </div>
+          </div>
+
+          <div class="picker-row">
+            <button class="picker-button" id="chooseIdeology" type="button"><img id="ideologyThumb" alt=""><span><b>Ideology icon</b><small id="ideologyName">Choose from built-in library</small></span></button>
+            <button class="picker-button" id="chooseFaction" type="button"><img id="factionThumb" alt=""><span><b>Alliance / faction icon</b><small id="factionName">Choose from built-in library</small></span></button>
+          </div>
+
+          <div class="pie-editor-card">
+            <div class="pie-editor-head"><div><b>Ideology pie chart</b><small>Set the colours and relative shares.</small></div><button id="addPieSlice" class="ui-btn subtle" type="button">+ Slice</button></div>
+            <div class="pie-editor-labels"><span>Name</span><span>Share</span><span>Colour</span><span></span></div>
+            <div id="pieEditorRows" class="pie-editor-rows"></div>
+            <div id="pieTotal" class="pie-total"></div>
+          </div>
+
+          <label class="range-row">Focus progress <input data-bind="country.focusProgress" type="range" min="0" max="100" step="1"><output id="focusProgressOut"></output></label>
+        </div>
+
+        <div class="tool-controls" data-controls="event">
+          <div class="section-title">Major event</div>
+          <label>Title<input data-bind="event.title" type="text" placeholder="Type text here..."></label>
+          <label>Body<textarea data-bind="event.body" rows="8" placeholder="Type text here..."></textarea></label>
+          <label>Button text<input data-bind="event.button" type="text" placeholder="Type text here..."></label>
+          <div class="wide-asset">
+            <img id="eventThumb" alt="Major event picture">
+            <div><b>Event picture</b><small>Upload image</small><label class="ui-btn file-btn">Upload image<input id="eventFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="event" type="button">Use placeholder</button></div>
+          </div>
+        </div>
+
+        <div class="tool-controls" data-controls="news">
+          <div class="section-title">Local news</div>
+          <label>Headline<input data-bind="news.title" type="text" placeholder="Type text here..."></label>
+          <label>Body<textarea data-bind="news.body" rows="10" placeholder="Type text here..."></textarea></label>
+          <label>Button text<input data-bind="news.button" type="text" placeholder="Type text here..."></label>
+          <div class="wide-asset">
+            <img id="newsThumb" alt="Local news picture">
+            <div><b>News picture</b><small>Upload image</small><label class="ui-btn file-btn">Upload image<input id="newsFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="news" type="button">Use placeholder</button></div>
+          </div>
+        </div>
+
+        <div class="tool-controls" data-controls="super">
+          <div class="section-title">Super event</div>
+          <label>Title<input data-bind="super.title" type="text" placeholder="Type text here..."></label>
+          <label>Quote / motto<textarea data-bind="super.motto" rows="5" placeholder="Type text here..."></textarea></label>
+          <label>Button text<input data-bind="super.button" type="text" placeholder="Type text here..."></label>
+          <div class="wide-asset">
+            <img id="superThumb" alt="Super event picture">
+            <div><b>Super-event picture</b><small>Upload image</small><label class="ui-btn file-btn">Upload image<input id="superFile" type="file" accept="image/*"></label><button class="mini-btn" data-clear-asset="super" type="button">Use placeholder</button></div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="iconDialog" class="icon-dialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-head"><strong id="iconDialogTitle">Choose icon</strong><button class="ui-btn" value="cancel">×</button></div>
+      <input id="iconSearch" class="icon-search" type="search" placeholder="Search icons…" autocomplete="off">
+      <div class="icon-grid" id="iconGrid"></div>
+    </form>
+  </dialog>
+
+  <dialog id="disclaimerDialog" class="disclaimer-dialog">
+    <div class="disclaimer-card">
+      <h2>Unofficial fan project</h2>
+      <p>This website is an unofficial fan-made project. It is <strong>not affiliated with, endorsed by, or operated by The Fire Rises development team or The Fire Rises Wiki.</strong></p>
+      <p>Game/mod names, graphics and other referenced material belong to their respective creators and rights holders.</p>
+      <button id="acceptDisclaimer" class="ui-btn primary" type="button">Continue</button>
+    </div>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>
