@@ -354,7 +354,10 @@ function markRichDirty(editor,setter){dirtyRichEditors.set(editor,setter);queueS
 function flushRichEditors(){if(!dirtyRichEditors.size)return;for(const [editor,setter] of [...dirtyRichEditors]){dirtyRichEditors.delete(editor);if(!editor.isConnected)continue;setter(sanitize(editor.innerHTML))}}
 
 function isWritable(t){if(!(t instanceof Element))return false;if(t.closest('[contenteditable=true]'))return true;const i=t.closest('input,textarea');if(!i)return false;const type=(i.type||'text').toLowerCase();return !['button','file','checkbox','radio','range','color','submit','reset'].includes(type)}
-const audioPools={};let muted=isPhone();
+const SOUND_PREF_KEY='tfr-sound-muted-v1';
+function readSoundPreference(){const saved=localStorage.getItem(SOUND_PREF_KEY);return saved===null?isPhone():saved==='1'}
+function writeSoundPreference(){try{localStorage.setItem(SOUND_PREF_KEY,muted?'1':'0')}catch{}}
+const audioPools={};let muted=readSoundPreference();
 function playSound(name){if(muted||!audioPools[name])return;const a=audioPools[name].find(x=>x.paused||x.ended)||audioPools[name][0];try{a.currentTime=0;a.play().catch(()=>{})}catch{}}
 function classifySound(t){if(isWritable(t))return'province';const btn=t.closest?.('button,a,summary,select,.file-btn,label');if(!btn)return null;const txt=(btn.textContent||'').trim().toLowerCase();if(btn.matches?.('.danger')||/remove|delete|cancel|close|hide|×/.test(txt))return'close';return'open'}
 document.addEventListener('pointerdown',e=>{const s=classifySound(e.target);if(s)playSound(s)},true);
@@ -522,8 +525,9 @@ async function exportCurrentPagePng(){
 els.mobileNewProjectBtn.onclick=()=>{closeMobilePages();$('#newProjectBtn').click()};els.mobileImportBtn.onclick=()=>{closeMobilePages();$('#importBtn').click()};els.mobileExportHtmlBtn.onclick=()=>{closeMobilePages();els.mobileExportMenu?.removeAttribute('open');$('#exportBtn').click()};els.mobileExportPngBtn.onclick=async()=>{closeMobilePages();els.mobileExportMenu?.removeAttribute('open');const btn=els.mobileExportPngBtn,oldText=btn.textContent;btn.disabled=true;btn.textContent='Rendering PNG…';try{await exportCurrentPagePng()}catch(err){console.error(err);alert('Could not export this page as PNG: '+(err?.message||err))}finally{btn.disabled=false;btn.textContent=oldText}};
 els.iconLibraryCategory.onchange=renderIconGrid;els.iconLibrarySearch.oninput=renderIconGrid;els.closeIconLibrary.onclick=closeIconLibrary;els.iconLibraryModal.addEventListener('click',e=>{if(e.target===els.iconLibraryModal)closeIconLibrary()});els.uploadOwnIcon.onclick=()=>els.iconLibraryUpload.click();els.iconLibraryUpload.onchange=async()=>{const f=els.iconLibraryUpload.files[0];els.iconLibraryUpload.value='';if(!f||!iconTargetSetter)return;iconTargetSetter(await optimizedUpload(f,'icon'));closeIconLibrary()};els.removeChosenIcon.onclick=()=>{if(iconTargetSetter)iconTargetSetter('');closeIconLibrary()};
 function syncSound(){for(const b of [els.soundToggle,els.mobileSoundToggle]){if(!b)continue;b.classList.toggle('is-muted',muted);b.title='Sound effects: '+(muted?'off':'on');b.setAttribute('aria-label',muted?'Enable sound effects':'Mute sound effects')}}
-function toggleSound(){muted=!muted;syncSound();if(!muted)playSound('open')}
+function toggleSound(){muted=!muted;writeSoundPreference();syncSound();if(!muted)playSound('open')}
 els.soundToggle.onclick=toggleSound;els.mobileSoundToggle.onclick=toggleSound;
+window.addEventListener('storage',e=>{if(e.key===SOUND_PREF_KEY){muted=readSoundPreference();syncSound()}});window.addEventListener('pageshow',()=>{muted=readSoundPreference();syncSound()});
 let musicMuted=true;
 function syncMusic(){els.backgroundMusic.muted=musicMuted;for(const b of [els.musicToggle,els.mobileMusicToggle]){if(!b)continue;b.classList.toggle('is-muted',musicMuted);b.title='Music: '+(musicMuted?'off':'on');b.setAttribute('aria-label',musicMuted?'Play background music':'Mute background music')}}
 async function toggleMusic(){musicMuted=!musicMuted;syncMusic();try{if(musicMuted)els.backgroundMusic.pause();else await els.backgroundMusic.play()}catch{}}
@@ -537,7 +541,7 @@ async function init(){
  try{
    els.backgroundMusic.volume=.35;
    els.backgroundMusic.muted=true;
-   if(isPhone()){muted=true;musicMuted=true;els.backgroundMusic.pause()}
+   if(isPhone()){musicMuted=true;els.backgroundMusic.pause()}
    syncSound();
    syncMusic();
    setMobilePanel('article');

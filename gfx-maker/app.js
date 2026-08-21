@@ -80,27 +80,50 @@ const assetUrls = {
 };
 const objectUrls = new Map();
 
+const SOUND_PREF_KEY = 'tfr-sound-muted-v1';
 const SOUND_URLS = {
-  click: '../assets/click_province_01.wav',
+  province: '../assets/click_province_01.wav',
   open: '../assets/click_window_open.wav',
   close: '../assets/click_close.wav'
 };
 const soundPools = Object.fromEntries(Object.entries(SOUND_URLS).map(([name,src]) => [name, Array.from({length:4}, () => {
   const audio = new Audio(src); audio.volume = .72; return audio;
 })]));
-function playSound(name='click'){
-  const pool=soundPools[name]||soundPools.click; if(!pool)return;
+let soundMuted = readSoundPreference();
+function readSoundPreference(){
+  try {
+    const saved = localStorage.getItem(SOUND_PREF_KEY);
+    if(saved !== null) return saved === '1';
+  } catch {}
+  return matchMedia('(max-width: 760px)').matches;
+}
+function playSound(name='province'){
+  if(soundMuted)return;
+  const pool=soundPools[name]||soundPools.province; if(!pool)return;
   const audio=pool.find(a=>a.paused||a.ended)||pool[0];
   try{audio.currentTime=0;audio.play().catch(()=>{});}catch{}
 }
+function isWritableTarget(el){
+  if(!(el instanceof Element))return false;
+  if(el.closest('[contenteditable=true]'))return true;
+  const input=el.closest('input,textarea');
+  if(!input)return false;
+  const type=(input.type||'text').toLowerCase();
+  return !['button','file','checkbox','radio','range','color','submit','reset'].includes(type);
+}
 function soundForTarget(target){
   const el=target instanceof Element?target:null;
-  if(!el)return 'click';
-  if(el.closest('.dialog-head button,[value=cancel]'))return 'close';
-  if(el.closest('#chooseIdeology,#chooseFaction,#disclaimerBtn'))return 'open';
-  return 'click';
+  if(!el)return null;
+  if(isWritableTarget(el))return 'province';
+  const control=el.closest('button,a,summary,select,.file-btn,label');
+  if(!control)return null;
+  const text=(control.textContent||'').trim().toLowerCase();
+  if(control.matches('.danger,[value=cancel]') || control.closest('.dialog-head') && /×|close|cancel/.test(text) || /remove|delete|cancel|close|hide|×/.test(text))return 'close';
+  return 'open';
 }
-document.addEventListener('pointerdown',e=>playSound(soundForTarget(e.target)),true);
+document.addEventListener('pointerdown',e=>{const name=soundForTarget(e.target);if(name)playSound(name)},true);
+window.addEventListener('storage',e=>{if(e.key===SOUND_PREF_KEY)soundMuted=readSoundPreference()});
+window.addEventListener('pageshow',()=>{soundMuted=readSoundPreference()});
 
 function cloneDefaults(){ return JSON.parse(JSON.stringify(DEFAULTS)); }
 function mergeDeep(base, incoming){
