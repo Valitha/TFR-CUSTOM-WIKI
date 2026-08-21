@@ -1107,7 +1107,19 @@ body.mobile-pages-open{overflow:hidden}
 
 /* V30 — GFX Maker link + site disclaimer. */
 .workspace-tab.gfx-maker-link{display:inline-flex;align-items:center;text-decoration:none}
-.mobile-sidebar-actions .gfx-maker-mobile-link{text-decoration:none;text-align:center}
+.mobile-sidebar-actions .gfx-maker-mobile-link{
+  grid-column:1/-1;
+  width:100%;
+  min-height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  text-align:center;
+  font-size:16px;
+  border-color:var(--purple);
+  background:rgba(127,77,159,.16);
+}
 .site-disclaimer-card{max-width:560px}
 .site-disclaimer-card p{color:var(--muted);line-height:1.55}
 .site-disclaimer-card strong{color:var(--text)}

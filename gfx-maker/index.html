@@ -3,7 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="theme-color" content="#080309">
+  <script>
+    try {
+      if ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true) {
+        document.documentElement.classList.add('pwa-standalone');
+      }
+    } catch (_) {}
+  </script>
   <title>TFR GFX Maker</title>
   <link rel="manifest" href="../manifest.webmanifest">
   <link rel="stylesheet" href="./style.css">
@@ -15,7 +24,7 @@
       <span>TFR GFX Maker</span>
     </a>
     <nav class="top-actions">
-      <a class="ui-btn" href="../">Wiki Editor</a>
+      <a class="ui-btn wiki-return" href="../" aria-label="Back to Wiki Editor">← Wiki Editor</a>
       <button class="ui-btn" id="disclaimerBtn" type="button">Disclaimer</button>
       <button class="ui-btn primary" id="exportBtn" type="button">Export PNG</button>
     </nav>

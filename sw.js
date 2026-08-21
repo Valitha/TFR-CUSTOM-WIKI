@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tfr-wiki-shell-v31';
+const CACHE_NAME = 'tfr-wiki-shell-v32';
 const CORE = [
   './',
   './index.html',
