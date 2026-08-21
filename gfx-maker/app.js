@@ -622,57 +622,66 @@ function openExportProgress(){
   document.body.appendChild(layer);const text=layer.querySelector('.export-progress-text'),bar=layer.querySelector('.export-progress-track i');
   return{update(done,total,label){const pct=total?Math.round(done/total*100):0;text.textContent=label||`Rendering frames… ${pct}%`;bar.style.width=`${Math.max(0,Math.min(100,pct))}%`},close(){layer.remove()}};
 }
-let gifPaletteCache=null,gifLevelCache=null;
-function gifColorLevels(){if(gifLevelCache)return gifLevelCache;const r=new Uint8Array(256),g=new Uint8Array(256),b=new Uint8Array(256);for(let i=0;i<256;i++){r[i]=Math.round(i*5/255);g[i]=Math.round(i*6/255);b[i]=Math.round(i*5/255)}return gifLevelCache={r,g,b}}
-function gifPalette(){if(gifPaletteCache)return gifPaletteCache;const out=new Uint8Array(768);for(let rl=0;rl<6;rl++)for(let gl=0;gl<7;gl++)for(let bl=0;bl<6;bl++){const index=1+rl*42+gl*6+bl;out[index*3]=Math.round(rl*255/5);out[index*3+1]=Math.round(gl*255/6);out[index*3+2]=Math.round(bl*255/5)}return gifPaletteCache=out}
-function gifIndexPixels(rgba,width,height){
-  const out=new Uint8Array(width*height),levels=gifColorLevels();
-  const er0=new Float32Array(width+2),eg0=new Float32Array(width+2),eb0=new Float32Array(width+2),er1=new Float32Array(width+2),eg1=new Float32Array(width+2),eb1=new Float32Array(width+2);
-  for(let y=0;y<height;y++){
-    er1.fill(0);eg1.fill(0);eb1.fill(0);
-    for(let x=0;x<width;x++){
-      const p=(y*width+x)*4,o=y*width+x;if(rgba[p+3]<128){out[o]=0;continue}
-      const r=Math.max(0,Math.min(255,rgba[p]+er0[x+1])),g=Math.max(0,Math.min(255,rgba[p+1]+eg0[x+1])),b=Math.max(0,Math.min(255,rgba[p+2]+eb0[x+1]));
-      const rl=levels.r[Math.round(r)],gl=levels.g[Math.round(g)],bl=levels.b[Math.round(b)],index=1+rl*42+gl*6+bl;out[o]=index;
-      const qr=rl*255/5,qg=gl*255/6,qb=bl*255/5,dr=r-qr,dg=g-qg,db=b-qb;
-      er0[x+2]+=dr*7/16;eg0[x+2]+=dg*7/16;eb0[x+2]+=db*7/16;
-      er1[x]+=dr*3/16;eg1[x]+=dg*3/16;eb1[x]+=db*3/16;
-      er1[x+1]+=dr*5/16;eg1[x+1]+=dg*5/16;eb1[x+1]+=db*5/16;
-      er1[x+2]+=dr/16;eg1[x+2]+=dg/16;eb1[x+2]+=db/16;
-    }
-    er0.set(er1);eg0.set(eg1);eb0.set(eb1);
-  }
+let pngCrcTable=null;
+function pngCrc32(bytes){
+  if(!pngCrcTable){pngCrcTable=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xEDB88320^(c>>>1):c>>>1;pngCrcTable[n]=c>>>0}}
+  let c=0xFFFFFFFF;for(const byte of bytes)c=pngCrcTable[(c^byte)&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;
+}
+function u32be(value){return Uint8Array.of((value>>>24)&255,(value>>>16)&255,(value>>>8)&255,value&255)}
+function pngChunk(type,data){
+  const name=new TextEncoder().encode(type),length=u32be(data.length),crcInput=new Uint8Array(4+data.length);crcInput.set(name);crcInput.set(data,4);const crc=u32be(pngCrc32(crcInput)),out=new Uint8Array(12+data.length);out.set(length);out.set(name,4);out.set(data,8);out.set(crc,8+data.length);return out;
+}
+async function readPngParts(blob){
+  const bytes=new Uint8Array(await blob.arrayBuffer()),signature=bytes.subarray(0,8),chunks=[];let pos=8;
+  while(pos+12<=bytes.length){const length=(bytes[pos]<<24)|(bytes[pos+1]<<16)|(bytes[pos+2]<<8)|bytes[pos+3],type=String.fromCharCode(...bytes.subarray(pos+4,pos+8)),data=bytes.subarray(pos+8,pos+8+length);chunks.push({type,data:new Uint8Array(data)});pos+=12+length;if(type==='IEND')break}
+  return{signature:new Uint8Array(signature),chunks};
+}
+function rgbaChangedRect(now,previous,width,height){
+  if(!previous)return{x:0,y:0,w:width,h:height};let minX=width,minY=height,maxX=-1,maxY=-1;
+  for(let y=0,p=0;y<height;y++)for(let x=0;x<width;x++,p+=4){if(now[p]===previous[p]&&now[p+1]===previous[p+1]&&now[p+2]===previous[p+2]&&now[p+3]===previous[p+3])continue;if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}
+  return maxX<0?null:{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
+}
+function cropRgba(rgba,rect,fullWidth){
+  const out=new Uint8ClampedArray(rect.w*rect.h*4),rowBytes=rect.w*4;
+  for(let y=0;y<rect.h;y++){const from=((rect.y+y)*fullWidth+rect.x)*4;out.set(rgba.subarray(from,from+rowBytes),y*rowBytes)}
   return out;
 }
-function gifLzw(indexed,minCodeSize=8){
-  const clear=1<<minCodeSize,end=clear+1,bytes=[],blocks=[];let current=0,bits=0,codeSize=minCodeSize+1,next=end+1,dict=new Map();
-  const write=code=>{current|=code<<bits;bits+=codeSize;while(bits>=8){bytes.push(current&255);current>>>=8;bits-=8}};
-  const reset=()=>{dict=new Map();codeSize=minCodeSize+1;next=end+1};
-  write(clear);
-  if(indexed.length){let prefix=indexed[0];for(let i=1;i<indexed.length;i++){const value=indexed[i],key=prefix*256+value,found=dict.get(key);if(found!==undefined){prefix=found;continue}write(prefix);if(next<4096){dict.set(key,next++);if(next>(1<<codeSize)&&codeSize<12)codeSize++}else{write(clear);reset()}prefix=value}write(prefix)}
-  write(end);if(bits>0)bytes.push(current&255);
-  for(let i=0;i<bytes.length;i+=255){const count=Math.min(255,bytes.length-i);blocks.push(count,...bytes.slice(i,i+count))}blocks.push(0);return new Uint8Array(blocks);
+async function rgbaToPngBlob(rgba,rect,fullWidth){
+  const c=document.createElement('canvas');c.width=rect.w;c.height=rect.h;const cctx=c.getContext('2d');cctx.putImageData(new ImageData(cropRgba(rgba,rect,fullWidth),rect.w,rect.h),0,0);return new Promise(resolve=>c.toBlob(resolve,'image/png'));
 }
-function createGifEncoder(width,height){
-  const chunks=[],palette=gifPalette();let started=false,finished=false;const push=(...xs)=>chunks.push(Uint8Array.from(xs)),u16=n=>[n&255,(n>>8)&255],ascii=text=>Uint8Array.from([...text].map(c=>c.charCodeAt(0)));
-  chunks.push(ascii('GIF89a'));push(...u16(width),...u16(height),0xF7,0,0);chunks.push(palette);push(0x21,0xFF,0x0B);chunks.push(ascii('NETSCAPE2.0'));push(3,1,0,0,0);
-  return{addFrame(rgba,delayMs=100){if(finished)throw new Error('GIF is already finished.');const indexed=gifIndexPixels(rgba,width,height),delay=Math.max(2,Math.min(65535,Math.round(delayMs/10)));push(0x21,0xF9,4,9,...u16(delay),0,0);push(0x2C,0,0,0,0,...u16(width),...u16(height),0);push(8);chunks.push(gifLzw(indexed,8));started=true},finish(){if(!started)throw new Error('No GIF frames were added.');if(!finished){push(0x3B);finished=true}return new Blob(chunks,{type:'image/gif'})}};
+function apngFrameControl(sequence,rect,delayMs){
+  const data=new Uint8Array(26),view=new DataView(data.buffer);view.setUint32(0,sequence);view.setUint32(4,rect.w);view.setUint32(8,rect.h);view.setUint32(12,rect.x);view.setUint32(16,rect.y);view.setUint16(20,Math.max(1,Math.min(65535,Math.round(delayMs))));view.setUint16(22,1000);data[24]=0;data[25]=0;return data;
+}
+async function createAnimatedPng(frames,width,height){
+  if(!frames.length)throw new Error('No animation frames were rendered.');
+  const parsed=[];for(const frame of frames){const blob=await rgbaToPngBlob(frame.rgba,frame.rect,width);if(!blob)throw new Error('Could not prepare an animation frame.');parsed.push(await readPngParts(blob))}
+  const first=parsed[0],ihdr=first.chunks.find(c=>c.type==='IHDR');if(!ihdr)throw new Error('Could not read the PNG frame.');
+  const out=[first.signature,pngChunk('IHDR',ihdr.data)],actl=new Uint8Array(8),actlView=new DataView(actl.buffer);actlView.setUint32(0,frames.length);actlView.setUint32(4,0);out.push(pngChunk('acTL',actl));
+  let sequence=0;
+  for(let i=0;i<frames.length;i++){
+    const frame=frames[i],parts=parsed[i],idats=parts.chunks.filter(c=>c.type==='IDAT');out.push(pngChunk('fcTL',apngFrameControl(sequence++,frame.rect,frame.delay)));
+    if(i===0){for(const chunk of idats)out.push(pngChunk('IDAT',chunk.data))}
+    else for(const chunk of idats){const data=new Uint8Array(4+chunk.data.length);data.set(u32be(sequence++));data.set(chunk.data,4);out.push(pngChunk('fdAT',data))}
+  }
+  out.push(pngChunk('IEND',new Uint8Array(0)));return new Blob(out,{type:'image/png'});
 }
 function exportFrameTimes(){
-  const duration=activeAnimationDuration();let step=100;
-  for(const key of animatedKeysForTool()){const animation=decodedAnimations.get(key);if(!animation)continue;for(const frame of animation.frames)step=Math.min(step,Math.max(50,frame.delay))}
-  step=Math.max(70,Math.min(125,step));let count=Math.max(2,Math.ceil(duration/step));if(count>72){count=72;step=duration/count}return{duration,step,count};
+  const duration=activeAnimationDuration();let step=110;
+  for(const key of animatedKeysForTool()){const animation=decodedAnimations.get(key);if(!animation)continue;for(const frame of animation.frames)step=Math.min(step,Math.max(80,frame.delay))}
+  step=Math.max(100,Math.min(160,step));let count=Math.max(2,Math.ceil(duration/step));if(count>30){count=30;step=duration/count}return{duration,step,count};
 }
 async function exportPNG(){
   const mode=activeToolHasAnimation()?await exportModePopup():'static';if(!mode)return;const safe=activeTool.replace(/[^a-z0-9_-]+/gi,'-');
   if(mode==='static'){await renderActiveNow();const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(blob)downloadImageBlob(blob,`tfr-${safe}-gfx.png`);return}
   const progress=openExportProgress();exportInProgress=true;if(animationLoopId){cancelAnimationFrame(animationLoopId);animationLoopId=0}
   try{
-    await nextPaint();const timing=exportFrameTimes(),gif=createGifEncoder(canvas.width,canvas.height);
+    await nextPaint();const timing=exportFrameTimes(),frames=[];let previous=null;
     for(let i=0;i<timing.count;i++){
-      const time=i*timing.step;await renderActiveNow(time);gif.addFrame(canvasRgba(),timing.step);progress.update(i+1,timing.count);if(i%2===1)await nextPaint();
+      await renderActiveNow(i*timing.step);const rgba=new Uint8ClampedArray(canvasRgba()),rect=rgbaChangedRect(rgba,previous,canvas.width,canvas.height);
+      if(!rect&&frames.length){frames[frames.length-1].delay+=timing.step}else{frames.push({rgba,rect:rect||{x:0,y:0,w:1,h:1},delay:timing.step});previous=rgba}
+      progress.update(i+1,timing.count);if(i%3===2)await nextPaint();
     }
-    progress.update(timing.count,timing.count,'Finishing file…');await nextPaint();downloadImageBlob(gif.finish(),`tfr-${safe}-gfx-animated.gif`);
+    progress.update(timing.count,timing.count,'Compressing animation…');await nextPaint();const blob=await createAnimatedPng(frames,canvas.width,canvas.height);downloadImageBlob(blob,`tfr-${safe}-gfx-animated.png`);
   }catch(error){console.error(error);alert('Could not export the animated image.')}finally{progress.close();exportInProgress=false;animationStartedAt=performance.now();scheduleRender()}
 }
 async function resetTool(){
