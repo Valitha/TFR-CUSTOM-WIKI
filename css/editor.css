@@ -1135,3 +1135,144 @@ body.mobile-pages-open{overflow:hidden}
   .mobile-export-options{display:grid;grid-template-columns:1fr;gap:7px;margin-top:7px;padding:8px;border:1px solid var(--purple);background:#0b070d}
   .mobile-export-options .ui-btn{width:100%;min-height:48px;text-align:center}
 }
+
+/* V36 — interactive mobile swipe navigation + readable infobox row headers. */
+@media(max-width:760px){
+  html,body{overscroll-behavior-x:none}
+
+  /* Drawer follows the thumb rather than snapping at touchend. */
+  body.mobile-pages-gesture{overflow:hidden}
+  .page-sidebar.mobile-gesture-dragging{transition:none!important;will-change:transform}
+  .mobile-drawer-backdrop.mobile-gesture-visible{display:block!important}
+  .mobile-drawer-backdrop.mobile-gesture-dragging{transition:none!important;will-change:opacity}
+
+  /* Interactive Editor -> Preview overlay. */
+  body.mobile-mode-gesture{overflow:hidden!important}
+  body.mobile-gesture-to-preview #previewPane{
+    display:block!important;
+    position:fixed!important;
+    inset:0!important;
+    z-index:3600!important;
+    width:100%!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    background:#080309!important;
+    box-shadow:-18px 0 34px rgba(0,0,0,.42);
+  }
+  body.mobile-gesture-to-preview #previewPane .preview-toolbar,
+  body.mobile-gesture-to-preview #mobileReturnEdit{display:none!important}
+  body.mobile-gesture-to-preview #previewWrap,
+  body.mobile-gesture-to-preview #previewWrap.phone{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body.mobile-gesture-to-preview #previewFrame{
+    display:block!important;
+    width:100%!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#080309!important;
+  }
+
+  /* Preview -> Editor: reveal the real editor underneath the moving Preview. */
+  body.mobile-gesture-from-preview .app-header{display:flex!important;position:fixed!important;left:0;right:0;top:0;z-index:3000!important}
+  body.mobile-gesture-from-preview .mobile-editor-nav{display:block!important;position:fixed!important;left:0;right:0;top:56px;z-index:2990!important}
+  body.mobile-gesture-from-preview #editorPane{
+    display:block!important;
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    top:106px!important;
+    bottom:0!important;
+    z-index:2980!important;
+    overflow:hidden!important;
+    background:#0b070d!important;
+  }
+  body.mobile-gesture-from-preview #previewPane{
+    display:block!important;
+    position:fixed!important;
+    inset:0!important;
+    z-index:3600!important;
+    width:100%!important;
+    min-height:100dvh!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-shadow:-18px 0 34px rgba(0,0,0,.42);
+  }
+  body.mobile-gesture-from-preview #mobileReturnEdit{display:none!important}
+
+  /* Put optional row icons BEFORE the label and give the label a full row.
+     This prevents short, unreadable labels on narrow phones. */
+  .row-top .row-label-wrap{
+    grid-column:1/-1!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:8px!important;
+  }
+  .row-top .row-label-wrap .row-icon-picker{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:40px!important;
+    min-width:40px!important;
+    height:44px!important;
+  }
+  .row-top .row-label-wrap:not(.no-icon) .row-label{
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .row-top .row-label-wrap.no-icon{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .row-top .row-label-wrap.no-icon .row-label{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+  }
+  .row-top .row-type{
+    grid-column:1/3!important;
+    grid-row:2!important;
+    width:100%!important;
+  }
+  .row-top .row-remove{
+    grid-column:3!important;
+    grid-row:2!important;
+  }
+  .row-top .row-value{
+    grid-column:1/-1!important;
+    grid-row:3!important;
+  }
+}
+
+@media(max-width:760px){
+  html.pwa-standalone body.mobile-gesture-to-preview #previewPane{
+    padding-top:env(safe-area-inset-top)!important;
+    padding-left:env(safe-area-inset-left)!important;
+    padding-right:env(safe-area-inset-right)!important;
+  }
+  html.pwa-standalone body.mobile-gesture-to-preview #previewWrap,
+  html.pwa-standalone body.mobile-gesture-to-preview #previewWrap.phone,
+  html.pwa-standalone body.mobile-gesture-to-preview #previewFrame{
+    min-height:calc(100dvh - env(safe-area-inset-top))!important;
+    height:calc(100dvh - env(safe-area-inset-top))!important;
+  }
+  html.pwa-standalone body.mobile-gesture-from-preview .mobile-editor-nav{
+    top:calc(56px + env(safe-area-inset-top))!important;
+  }
+  html.pwa-standalone body.mobile-gesture-from-preview #editorPane{
+    top:calc(106px + env(safe-area-inset-top))!important;
+  }
+}
