@@ -47,6 +47,7 @@ const DEFAULTS = {
       bop: 13
     },
     textPositions: {
+      country: { x: 0, y: 0 },
       leader: { x: 0, y: 0 },
       ideology: { x: 0, y: 0 },
       election: { x: 0, y: 0 },
@@ -62,6 +63,7 @@ const DEFAULTS = {
       focus: { x: 0, y: 0, size: 100 }
     },
     positions: {
+      identityBar: { x: 0, y: 0, size: 100 },
       focusPanel: { x: 0, y: 0, size: 100 },
       ideology: { x: 0, y: 0, size: 100 },
       factionTop: { x: 0, y: 0, size: 110 },
@@ -459,7 +461,7 @@ async function emptySpirit(key){
 }
 
 function updateThumbs(){
-  const map={leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb',spirit1:'spirit1Thumb',spirit2:'spirit2Thumb',spirit3:'spirit3Thumb',spirit4:'spirit4Thumb',spirit5:'spirit5Thumb',spirit6:'spirit6Thumb'};
+  const map={flag:'flagThumb',leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb',spirit1:'spirit1Thumb',spirit2:'spirit2Thumb',spirit3:'spirit3Thumb',spirit4:'spirit4Thumb',spirit5:'spirit5Thumb',spirit6:'spirit6Thumb'};
   for(const [key,id] of Object.entries(map)){
     const img=$('#'+id),src=assetUrls[key]||'';
     if(img){
@@ -538,10 +540,13 @@ function setCanvas(w,h,title,scale=1){
 }
 
 async function renderCountry(seq){
-  setCanvas(719,394,'Country',2);
-  ctx.clearRect(0,0,719,394);
-  ctx.fillStyle='#000';ctx.fillRect(0,0,719,394);
+  setCanvas(719,465,'Country',2);
+  ctx.clearRect(0,0,719,465);
+  ctx.fillStyle='#000';ctx.fillRect(0,0,719,465);
   const imgs=await Promise.all([
+    loadImage(template('diplo_upper_win_bg.png')),
+    loadImage(template('flag_overlay.png')),
+    loadAssetImage('flag',assetUrls.flag),
     loadImage('./assets/country/pol_view_bg_new.png'),
     loadImage('./assets/country/pol_leader_frame.png'),
     loadImage('./assets/country/pol_goal_bg.png'),
@@ -571,17 +576,36 @@ async function renderCountry(seq){
     loadAssetImage('spirit5',assetUrls.spirit5),
     loadAssetImage('spirit6',assetUrls.spirit6)
   ]); if(seq!==renderSeq)return;
-  const [panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,bopFrame,leader,focus,ideology,factionTop,factionLower,economy,government,bop,...spirits]=imgs;
-
-  if(panel)ctx.drawImage(panel,0,0,719,394);
-
-  drawCoverTransform(leader,9,12,160,213,state.country.transforms?.leader);
-  if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
+  const [diploBar,flagOverlay,flag,panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,bopFrame,leader,focus,ideology,factionTop,factionLower,economy,government,bop,...spirits]=imgs;
 
   const positions=state.country.positions||DEFAULTS.country.positions;
   const ts=state.country.textSizes||DEFAULTS.country.textSizes;
   const textPositions=state.country.textPositions||DEFAULTS.country.textPositions;
   const textOffset=key=>({x:Number(textPositions[key]?.x)||0,y:Number(textPositions[key]?.y)||0});
+
+  withPlacement(positions.identityBar,359.5,35.5,()=>{
+    const flagX=0,textX=117,textW=602;
+    if(diploBar){
+      const sourceX=Math.min(96,diploBar.width-1);
+      const sourceW=Math.max(1,diploBar.width-sourceX);
+      ctx.drawImage(diploBar,sourceX,0,sourceW,diploBar.height,textX,0,textW,71);
+    }
+    drawCoverTransform(flag,flagX+13,8,90,55,state.country.transforms?.flag);
+    if(flagOverlay)ctx.drawImage(flagOverlay,flagX,2,117,67);
+    const countryTextPos=textOffset('country');
+    ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
+    ctx.fillStyle='#e7e7e7';ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.font=textFont(fitText(state.country.country,textW-28,Number(ts.country)||16,8,true),true);
+    ctx.fillText(state.country.country,textX+14+countryTextPos.x,35.5+countryTextPos.y,textW-28);
+    ctx.shadowColor='transparent';
+  });
+
+  ctx.save();
+  ctx.translate(0,71);
+  if(panel)ctx.drawImage(panel,0,0,719,394);
+
+  drawCoverTransform(leader,9,12,160,213,state.country.transforms?.leader);
+  if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
 
   withPlacement(positions.focusPanel,364.5,65.5,()=>{
     if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
@@ -694,6 +718,7 @@ async function renderCountry(seq){
     if(subjectsBtn)ctx.drawImage(subjectsBtn,330,358,34,33);
   });
   ctx.shadowColor='transparent';
+  ctx.restore();
 }
 
 async function renderEvent(seq){
@@ -767,7 +792,7 @@ function addPieSlice(){
   saveState();renderPieEditor();scheduleRender();
 }
 
-function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','spirit5','spirit6','ideologyIcon','factionIcon','factionLowerIcon','economyIcon','governmentIcon','bopIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
+function animatedKeysForTool(tool=activeTool){return({country:['flag','leader','focus','spirit1','spirit2','spirit3','spirit4','spirit5','spirit6','ideologyIcon','factionIcon','factionLowerIcon','economyIcon','governmentIcon','bopIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
 function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
 function activeAnimationDuration(){let duration=0;for(const key of animatedKeysForTool())if(animatedAssets.has(key))duration=Math.max(duration,animatedDurations.get(key)||1000);return Math.max(100,Math.min(15000,duration||1000))}
 function activeToolNeedsLiveRender(){return activeToolHasAnimation()}
@@ -1039,7 +1064,7 @@ function setupDisclaimer(){
 function init(){
   bindInputs(); updateOutputs(); updateThumbs(); renderPieEditor(); setupDisclaimer();
   $$('.tool-tab').forEach(b=>b.onclick=()=>switchTool(b.dataset.tool)); $('#mobileToolSelect').onchange=e=>switchTool(e.target.value);
-  $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
+  $('#flagFile').onchange=e=>handleAssetInput('flag',e.target); $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
   for(const key of ['spirit1','spirit2','spirit3','spirit4','spirit5','spirit6'])$('#'+key+'File').onchange=e=>handleAssetInput(key,e.target);
   $$('[data-clear-asset]').forEach(b=>b.onclick=()=>clearAsset(b.dataset.clearAsset));
   $$('[data-spirit-preset]').forEach(b=>b.onclick=()=>openIconPicker(b.dataset.spiritPreset));

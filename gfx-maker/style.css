@@ -98,7 +98,7 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
 
 
 /* Keep the Country controls tidy without changing the other GFX tools. */
-.country-main-assets{grid-template-columns:repeat(2,minmax(0,1fr))}
+.country-main-assets{grid-template-columns:repeat(3,minmax(0,1fr))}
 .country-picker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0 13px}
 .spirit-editor-card{border:1px solid var(--line);background:#100b12;margin:10px 0 13px;padding:9px}
 .spirit-editor-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
