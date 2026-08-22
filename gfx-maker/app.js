@@ -498,7 +498,7 @@ function drawCentered(im,cx,cy,scale=1,maxW=Infinity,maxH=Infinity){if(!im)retur
 function drawCenteredTransform(im,cx,cy,scale=1,maxW=Infinity,maxH=Infinity,t){
   if(!im)return;const size=imageDimensions(im),tr=cleanTransform(t);let s=scale;if(size.w*s>maxW)s=Math.min(s,maxW/size.w);if(size.h*s>maxH)s=Math.min(s,maxH/size.h);s*=tr.size/100;const w=size.w*s,h=size.h*s,ox=(tr.x/100)*(Number.isFinite(maxW)?maxW:0),oy=(tr.y/100)*(Number.isFinite(maxH)?maxH:0);ctx.drawImage(im,cx+ox-w/2,cy+oy-h/2,w,h);
 }
-function textFont(size, display=false, weight=400){ return `${weight} ${size}px ${display?"'VCROSDMONO', monospace":"'Electrolize', Arial, sans-serif"}`; }
+function textFont(size, display=false, weight=400){ return `${weight} ${size}px ${display?"'Pixeloid Sans', sans-serif":"'Electrolize', Arial, sans-serif"}`; }
 function fitText(text,maxWidth,size,min=9,display=false){ let s=size; while(s>min){ctx.font=textFont(s,display); if(ctx.measureText(text).width<=maxWidth) break; s-=.5;} return s; }
 function wrapLines(text,maxWidth,font,lineLimit=999){
   ctx.font=font; const paras=String(text||'').split(/\n/); const out=[];
@@ -634,12 +634,20 @@ async function renderCountry(seq){
     });
   }
 
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#e5b025';
   ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
-  ctx.fillStyle='#e5b025';ctx.fillText(state.country.economyText,90,372,154);
-  ctx.font=textFont(fitText(state.country.governmentText,118,Number(ts.government)||12,8,true),true);
-  ctx.fillStyle='#e7e7e7';
-  const governmentLines=wrapLines(state.country.governmentText,118,ctx.font,3);
-  governmentLines.forEach((line,index)=>ctx.fillText(line,314,326+index*15,118));
+  ctx.fillText(state.country.economyText,90,372,154);
+
+  const governmentSize=Number(ts.government)||12;
+  const governmentFont=textFont(governmentSize,true);
+  const governmentLines=wrapLines(state.country.governmentText,118,governmentFont,3);
+  const governmentLineHeight=Math.max(12,Math.round(governmentSize*1.25));
+  const governmentStartY=334-((governmentLines.length-1)*governmentLineHeight)/2;
+  ctx.font=governmentFont;ctx.fillStyle='#e7e7e7';
+  governmentLines.forEach((line,index)=>ctx.fillText(line,314,governmentStartY+index*governmentLineHeight,118));
+  ctx.restore();
 
   withPlacement(positions.partyList,606,300,()=>{
     ctx.textAlign='left';ctx.textBaseline='middle';
@@ -1017,7 +1025,13 @@ function init(){
   $('#powerBalanceEnabled').onchange=e=>{state.country.powerBalanceEnabled=!!e.target.checked;saveState();updateThumbs();scheduleRender();};
   $('#exportBtn').onclick=exportPNG; $('#resetToolBtn').onclick=()=>{if(confirm('Reset this GFX to its defaults?')) resetTool();};
   switchTool(activeTool); restoreAssets();
-  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>scheduleRender()).catch(()=>{});
+  if(document.fonts){
+    Promise.allSettled([
+      document.fonts.load("12px 'Pixeloid Sans'"),
+      document.fonts.load("20px 'Pixeloid Sans'"),
+      document.fonts.ready
+    ]).then(()=>scheduleRender()).catch(()=>{});
+  }
 }
 
 init();
