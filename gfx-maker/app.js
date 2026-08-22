@@ -51,17 +51,17 @@ const DEFAULTS = {
       focus: { x: 0, y: 0, size: 100 }
     },
     positions: {
-      focusPanel: { x: 0, y: 0 },
-      ideology: { x: 0, y: 0 },
-      factionTop: { x: 0, y: 0 },
-      factionLower: { x: 0, y: 0 },
-      economy: { x: 0, y: 0 },
-      government: { x: 0, y: 0 },
-      bop: { x: 0, y: -4 },
-      pie: { x: 6, y: 0 },
-      spirits: { x: 0, y: 0 },
-      partyList: { x: 0, y: 4 },
-      utilityButtons: { x: -2, y: 0 }
+      focusPanel: { x: 0, y: 0, size: 100 },
+      ideology: { x: 0, y: 0, size: 100 },
+      factionTop: { x: 0, y: 0, size: 110 },
+      factionLower: { x: 3, y: -4, size: 100 },
+      economy: { x: 0, y: 0, size: 100 },
+      government: { x: 0, y: 0, size: 100 },
+      bop: { x: 0, y: -4, size: 100 },
+      pie: { x: 6, y: 0, size: 100 },
+      spirits: { x: 0, y: 0, size: 100 },
+      partyList: { x: 0, y: 4, size: 100 },
+      utilityButtons: { x: -2, y: 0, size: 100 }
     },
     ideologySlices: [
       { label: 'Primary', value: 45, color: '#d94f91' },
@@ -196,7 +196,16 @@ function mergeDeep(base, incoming){
   return base;
 }
 function loadState(){
-  try { return mergeDeep(cloneDefaults(), JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')); }
+  try {
+    const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    const merged=mergeDeep(cloneDefaults(),saved);
+    const oldLower=saved?.country?.positions?.factionLower;
+    if(oldLower && oldLower.size===undefined && (Number(oldLower.x)||0)===0 && (Number(oldLower.y)||0)===0){
+      merged.country.positions.factionLower.x=3;
+      merged.country.positions.factionLower.y=-4;
+    }
+    return merged;
+  }
   catch { return cloneDefaults(); }
 }
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
@@ -472,7 +481,12 @@ function loadAssetImage(key,src){
   return loadImage(src);
 }
 function cleanTransform(t){return{x:Number(t?.x)||0,y:Number(t?.y)||0,size:Math.max(10,Number(t?.size)||100)}}
-function cleanPosition(p){return{x:Number(p?.x)||0,y:Number(p?.y)||0}}
+function cleanPlacement(p){return{x:Number(p?.x)||0,y:Number(p?.y)||0,size:Math.max(25,Math.min(300,Number(p?.size)||100))}}
+function withPlacement(p,cx,cy,draw){
+  const placement=cleanPlacement(p),scale=placement.size/100;
+  ctx.save();ctx.translate(cx+placement.x,cy+placement.y);ctx.scale(scale,scale);ctx.translate(-cx,-cy);
+  draw(placement);ctx.restore();
+}
 function imageDimensions(im){const w=Number(im?.naturalWidth||im?.videoWidth||im?.width)||1,h=Number(im?.naturalHeight||im?.videoHeight||im?.height)||1;return{w,h}}
 function drawCover(im,x,y,w,h){if(!im)return;const size=imageDimensions(im),s=Math.max(w/size.w,h/size.h),sw=w/s,sh=h/s,sx=(size.w-sw)/2,sy=(size.h-sh)/2;ctx.drawImage(im,sx,sy,sw,sh,x,y,w,h)}
 function drawCoverTransform(im,x,y,w,h,t){
@@ -554,52 +568,53 @@ async function renderCountry(seq){
   if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
 
   const positions=state.country.positions||DEFAULTS.country.positions;
-  const focusPos=cleanPosition(positions.focusPanel);
-  const focusX=focusPos.x,focusY=focusPos.y;
-  if(goalBg)ctx.drawImage(goalBg,185+focusX,12+focusY,359,107);
-  if(goalButton)ctx.drawImage(goalButton,278+focusX,24+focusY,258,83);
-  if(progressBg)ctx.drawImage(progressBg,292+focusX,92+focusY,237,6);
-  if(progress){
-    const amount=Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100;
-    const width=Math.round(237*amount);
-    if(width>0)ctx.drawImage(progress,0,0,width,Math.min(6,progress.height||6),292+focusX,92+focusY,width,6);
-  }
-  if(progressFrame)ctx.drawImage(progressFrame,291+focusX,91+focusY,239,8);
-  drawCenteredTransform(focus,236+focusX,65+focusY,1,76,76,state.country.transforms?.focus);
+  const ts=state.country.textSizes||DEFAULTS.country.textSizes;
 
-  const factionTopPos=cleanPosition(positions.factionTop);
-  const factionLowerPos=cleanPosition(positions.factionLower);
-  const ideologyPos=cleanPosition(positions.ideology);
-  const spiritsPos=cleanPosition(positions.spirits);
-  const economyPos=cleanPosition(positions.economy);
-  const governmentPos=cleanPosition(positions.government);
-  drawCentered(factionTop,632+factionTopPos.x,62+factionTopPos.y,1,86,86);
-  drawCentered(ideology,224+ideologyPos.x,166+ideologyPos.y,1,76,76);
-  const spiritX=[323,391,459,527,595,663];
-  spirits.forEach((spirit,index)=>drawCentered(spirit,spiritX[index]+spiritsPos.x,166+spiritsPos.y,1,62,62));
+  withPlacement(positions.focusPanel,364.5,65.5,()=>{
+    if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
+    if(goalButton)ctx.drawImage(goalButton,278,24,258,83);
+    if(progressBg)ctx.drawImage(progressBg,292,92,237,6);
+    if(progress){
+      const amount=Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100;
+      const width=Math.round(237*amount);
+      if(width>0)ctx.drawImage(progress,0,0,width,Math.min(6,progress.height||6),292,92,width,6);
+    }
+    if(progressFrame)ctx.drawImage(progressFrame,291,91,239,8);
+    drawCenteredTransform(focus,236,65,1,76,76,state.country.transforms?.focus);
+    ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
+    ctx.fillStyle='#e7e7e7';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=textFont(fitText(state.country.focusText,230,Number(ts.focus)||14,8,true),true);
+    ctx.fillText(state.country.focusText,407,58,230);
+    ctx.shadowColor='transparent';
+  });
 
-  drawCentered(economy,47+economyPos.x,319+economyPos.y,1,68,68);
-  drawCentered(factionLower,130+factionLowerPos.x,319+factionLowerPos.y,1,68,68);
-  drawCentered(government,212+governmentPos.x,334+governmentPos.y,1,68,68);
+  withPlacement(positions.factionTop,632,62,()=>drawCentered(factionTop,632,62,1,86,86));
+  withPlacement(positions.ideology,224,166,()=>drawCentered(ideology,224,166,1,76,76));
+  withPlacement(positions.spirits,493,166,()=>{
+    const spiritX=[323,391,459,527,595,663];
+    spirits.forEach((spirit,index)=>drawCentered(spirit,spiritX[index],166,1,62,62));
+  });
+
+  withPlacement(positions.economy,47,319,()=>drawCentered(economy,47,319,1,68,68));
+  withPlacement(positions.factionLower,130,319,()=>drawCentered(factionLower,130,319,1,68,68));
+  withPlacement(positions.government,212,334,()=>drawCentered(government,212,334,1,68,68));
 
   const slices=(state.country.ideologySlices||[]).filter(x=>Number(x.value)>0);
   const total=slices.reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0)||1;
-  const piePos=cleanPosition(positions.pie),pieCx=441+piePos.x,pieCy=335+piePos.y,pieR=39;
-  let angle=-Math.PI/2;
-  for(const slice of slices){
-    const amount=Math.max(0,Number(slice.value)||0)/total;
-    ctx.beginPath();ctx.moveTo(pieCx,pieCy);ctx.arc(pieCx,pieCy,pieR,angle,angle+Math.PI*2*amount);ctx.closePath();ctx.fillStyle=slice.color||'#777';ctx.fill();angle+=Math.PI*2*amount;
-  }
-  if(pieOverlay)ctx.drawImage(pieOverlay,pieCx-45,pieCy-43.5,90,87);
+  withPlacement(positions.pie,441,335,()=>{
+    const pieCx=441,pieCy=335,pieR=39;
+    let angle=-Math.PI/2;
+    for(const slice of slices){
+      const amount=Math.max(0,Number(slice.value)||0)/total;
+      ctx.beginPath();ctx.moveTo(pieCx,pieCy);ctx.arc(pieCx,pieCy,pieR,angle,angle+Math.PI*2*amount);ctx.closePath();ctx.fillStyle=slice.color||'#777';ctx.fill();angle+=Math.PI*2*amount;
+    }
+    if(pieOverlay)ctx.drawImage(pieOverlay,pieCx-45,pieCy-43.5,90,87);
+  });
 
-  const ts=state.country.textSizes||DEFAULTS.country.textSizes;
   ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
   ctx.fillStyle='#e7e7e7';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font=textFont(fitText(state.country.leader,148,Number(ts.leader)||15,8,true),true);
   ctx.fillText(state.country.leader,90,245,148);
-
-  ctx.font=textFont(fitText(state.country.focusText,230,Number(ts.focus)||14,8,true),true);
-  ctx.fillText(state.country.focusText,407+focusX,58+focusY,230);
 
   ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='#e7e7e7';
   ctx.font=textFont(fitText(state.country.ideologyText,174,Number(ts.ideology)||15,8,true),true);
@@ -611,11 +626,12 @@ async function renderCountry(seq){
   else{ctx.fillStyle='#e5b025';ctx.fillText(election,188,265,175)}
 
   if(state.country.powerBalanceEnabled!==false){
-    const bopPos=cleanPosition(positions.bop),bx=bopPos.x,by=bopPos.y;
-    if(bopFrame)ctx.drawImage(bopFrame,384+bx,218+by,86,57);
-    ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458+bx,238+by,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458+bx,260+by,72);
-    drawCentered(bop,405+bx,248+by,1,48,48);
+    withPlacement(positions.bop,427,247,()=>{
+      if(bopFrame)ctx.drawImage(bopFrame,384,218,86,57);
+      ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458,238,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458,260,72);
+      drawCentered(bop,405,248,1,48,48);
+    });
   }
 
   ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
@@ -625,24 +641,26 @@ async function renderCountry(seq){
   const governmentLines=wrapLines(state.country.governmentText,118,ctx.font,3);
   governmentLines.forEach((line,index)=>ctx.fillText(line,314,326+index*15,118));
 
-  const partyPos=cleanPosition(positions.partyList);
-  ctx.textAlign='left';ctx.textBaseline='middle';
-  const rowHeight=17,partyX=508+partyPos.x,partyY=222+partyPos.y,partyW=196;
-  const shown=slices.slice(0,10);
-  shown.forEach((slice,index)=>{
-    const y=partyY+index*rowHeight;
-    if(index===0&&partyRow)ctx.drawImage(partyRow,partyX,y-7,partyW,15);
-    if(partyColour)ctx.drawImage(partyColour,partyX,y-7,14,14);
-    ctx.fillStyle=slice.color||'#777';ctx.fillRect(partyX+3,y-4,8,8);
-    ctx.fillStyle='#e8e8e8';ctx.font=textFont(Number(ts.party)||11,true);
-    const amount=Math.max(0,Number(slice.value)||0);
-    ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18,y,178);
+  withPlacement(positions.partyList,606,300,()=>{
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    const rowHeight=17,partyX=508,partyY=222,partyW=196;
+    const shown=slices.slice(0,10);
+    shown.forEach((slice,index)=>{
+      const y=partyY+index*rowHeight;
+      if(index===0&&partyRow)ctx.drawImage(partyRow,partyX,y-7,partyW,15);
+      if(partyColour)ctx.drawImage(partyColour,partyX,y-7,14,14);
+      ctx.fillStyle=slice.color||'#777';ctx.fillRect(partyX+3,y-4,8,8);
+      ctx.fillStyle='#e8e8e8';ctx.font=textFont(Number(ts.party)||11,true);
+      const amount=Math.max(0,Number(slice.value)||0);
+      ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18,y,178);
+    });
   });
 
-  const utilityPos=cleanPosition(positions.utilityButtons);
-  if(occupiedBtn)ctx.drawImage(occupiedBtn,258+utilityPos.x,358+utilityPos.y,34,33);
-  if(exileBtn)ctx.drawImage(exileBtn,294+utilityPos.x,358+utilityPos.y,34,33);
-  if(subjectsBtn)ctx.drawImage(subjectsBtn,330+utilityPos.x,358+utilityPos.y,34,33);
+  withPlacement(positions.utilityButtons,309,374.5,()=>{
+    if(occupiedBtn)ctx.drawImage(occupiedBtn,258,358,34,33);
+    if(exileBtn)ctx.drawImage(exileBtn,294,358,34,33);
+    if(subjectsBtn)ctx.drawImage(subjectsBtn,330,358,34,33);
+  });
   ctx.shadowColor='transparent';
 }
 
