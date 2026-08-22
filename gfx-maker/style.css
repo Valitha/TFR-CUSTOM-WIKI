@@ -108,3 +108,14 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
   .spirit-grid .asset-card img{height:64px}
   .spirit-editor-head{align-items:flex-start}.spirit-editor-head small{max-width:140px}
 }
+
+.asset-card-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:4px}
+.asset-card-actions .ui-btn{width:100%;min-width:0;padding-left:5px;padding-right:5px}
+.asset-preview img[hidden]{display:none}
+.bop-toggle{grid-column:1/-1;display:flex!important;align-items:center;gap:8px;margin:0!important;padding:8px 9px;border:1px solid var(--line);background:#100b12;color:#ddd!important}
+.bop-toggle input{margin:0;accent-color:var(--purple)}
+.disabled-field{opacity:.48}
+@media(max-width:720px){
+  .asset-card-actions{grid-template-columns:1fr}
+  .spirit-grid .asset-card-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+}

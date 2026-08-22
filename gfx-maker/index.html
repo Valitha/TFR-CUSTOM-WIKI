@@ -71,8 +71,8 @@
             <label>Leader name<input data-bind="country.leader" type="text" placeholder="Type text here..."></label>
             <label>Ideology name<input data-bind="country.ideologyText" type="text" placeholder="Type text here..."></label>
             <label>Election / status<input data-bind="country.election" type="text" placeholder="Type text here..."></label>
-            <label>Power balance<input data-bind="country.powerBalancePercent" type="text" placeholder="100.0%"></label>
-            <label>Power balance levels<input data-bind="country.powerBalanceLevels" type="text" placeholder="1/1"></label>
+            <label class="bop-field">Power balance<input data-bind="country.powerBalancePercent" type="text" placeholder="100.0%"></label>
+            <label class="bop-field">Power balance levels<input data-bind="country.powerBalanceLevels" type="text" placeholder="1/1"></label>
             <label>Economy type name<input data-bind="country.economyText" type="text" placeholder="Type text here..."></label>
             <label>Government type name<input data-bind="country.governmentText" type="text" placeholder="Type text here..."></label>
             <label class="span-two">National focus name<input data-bind="country.focusText" type="text" placeholder="Type text here..."></label>
@@ -83,7 +83,12 @@
               <span>Leader</span><div class="asset-preview"><img id="leaderThumb" alt="Leader preview"><button class="asset-clear-x" data-clear-asset="leader" type="button" aria-label="Remove leader image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="leaderFile" type="file" accept="image/*"></label>
             </div>
             <div class="asset-card">
-              <span>National focus</span><div class="asset-preview"><img id="focusThumb" alt="Focus preview"><button class="asset-clear-x" data-clear-asset="focus" type="button" aria-label="Remove focus image" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="focusFile" type="file" accept="image/*"></label>
+              <span>National focus</span>
+              <div class="asset-preview"><img id="focusThumb" alt="Focus preview"><button class="asset-clear-x" data-clear-asset="focus" type="button" aria-label="Reset focus image" hidden>×</button></div>
+              <div class="asset-card-actions">
+                <button class="ui-btn subtle" id="chooseFocus" type="button">Choose preset</button>
+                <label class="ui-btn file-btn">Upload image<input id="focusFile" type="file" accept="image/*"></label>
+              </div>
             </div>
           </div>
 
@@ -92,15 +97,17 @@
             <button class="picker-button" id="chooseFaction" type="button"><img id="factionThumb" alt=""><span><b>Alliance / faction icon</b><small id="factionName">Choose from built-in library</small></span></button>
             <button class="picker-button" id="chooseEconomy" type="button"><img id="economyThumb" alt=""><span><b>Economy type</b><small id="economyName">Choose an economy type</small></span></button>
             <button class="picker-button" id="chooseGovernment" type="button"><img id="governmentThumb" alt=""><span><b>Government type</b><small id="governmentName">Choose a government type</small></span></button>
+            <button class="picker-button" id="chooseBop" type="button"><img id="bopThumb" alt=""><span><b>Balance of power icon</b><small id="bopName">Choose a BOP icon</small></span></button>
+            <label class="bop-toggle"><input id="powerBalanceEnabled" type="checkbox"> <span>Show balance of power</span></label>
           </div>
 
           <div class="spirit-editor-card">
             <div class="spirit-editor-head"><b>National spirits</b><small>Four slots shown in the country panel</small></div>
             <div class="asset-grid spirit-grid">
-              <div class="asset-card"><span>Spirit 1</span><div class="asset-preview"><img id="spirit1Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit1" type="button" aria-label="Reset national spirit 1" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit1File" type="file" accept="image/*"></label></div>
-              <div class="asset-card"><span>Spirit 2</span><div class="asset-preview"><img id="spirit2Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit2" type="button" aria-label="Reset national spirit 2" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit2File" type="file" accept="image/*"></label></div>
-              <div class="asset-card"><span>Spirit 3</span><div class="asset-preview"><img id="spirit3Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit3" type="button" aria-label="Reset national spirit 3" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit3File" type="file" accept="image/*"></label></div>
-              <div class="asset-card"><span>Spirit 4</span><div class="asset-preview"><img id="spirit4Thumb" alt="National spirit preview"><button class="asset-clear-x" data-clear-asset="spirit4" type="button" aria-label="Reset national spirit 4" hidden>×</button></div><label class="ui-btn file-btn">Upload image<input id="spirit4File" type="file" accept="image/*"></label></div>
+              <div class="asset-card"><span>Spirit 1</span><div class="asset-preview"><img id="spirit1Thumb" alt="National spirit preview"></div><div class="asset-card-actions"><button class="ui-btn subtle" data-spirit-preset="spirit1" type="button">Choose</button><label class="ui-btn file-btn">Upload<input id="spirit1File" type="file" accept="image/*"></label><button class="ui-btn subtle" data-empty-spirit="spirit1" type="button">Empty</button></div></div>
+              <div class="asset-card"><span>Spirit 2</span><div class="asset-preview"><img id="spirit2Thumb" alt="National spirit preview"></div><div class="asset-card-actions"><button class="ui-btn subtle" data-spirit-preset="spirit2" type="button">Choose</button><label class="ui-btn file-btn">Upload<input id="spirit2File" type="file" accept="image/*"></label><button class="ui-btn subtle" data-empty-spirit="spirit2" type="button">Empty</button></div></div>
+              <div class="asset-card"><span>Spirit 3</span><div class="asset-preview"><img id="spirit3Thumb" alt="National spirit preview"></div><div class="asset-card-actions"><button class="ui-btn subtle" data-spirit-preset="spirit3" type="button">Choose</button><label class="ui-btn file-btn">Upload<input id="spirit3File" type="file" accept="image/*"></label><button class="ui-btn subtle" data-empty-spirit="spirit3" type="button">Empty</button></div></div>
+              <div class="asset-card"><span>Spirit 4</span><div class="asset-preview"><img id="spirit4Thumb" alt="National spirit preview"></div><div class="asset-card-actions"><button class="ui-btn subtle" data-spirit-preset="spirit4" type="button">Choose</button><label class="ui-btn file-btn">Upload<input id="spirit4File" type="file" accept="image/*"></label><button class="ui-btn subtle" data-empty-spirit="spirit4" type="button">Empty</button></div></div>
             </div>
           </div>
 

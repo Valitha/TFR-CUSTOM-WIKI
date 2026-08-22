@@ -29,6 +29,9 @@ const DEFAULTS = {
     focusProgress: 35,
     powerBalancePercent: '100.0%',
     powerBalanceLevels: '1/1',
+    powerBalanceEnabled: true,
+    focusPreset: '',
+    spiritPresets: { spirit1: '', spirit2: '', spirit3: '', spirit4: '' },
     economyText: 'Capitalist Economy',
     governmentText: 'Semi Presidential System',
     textSizes: {
@@ -64,7 +67,10 @@ const DEFAULTS = {
     economyIconMode: 'builtin',
     governmentIcon: './assets/icon-library/government/ZZZ_semi_presidential_system.png',
     governmentIconName: 'Semi Presidential System',
-    governmentIconMode: 'builtin'
+    governmentIconMode: 'builtin',
+    bopIcon: '../assets/icon-library/ideology/right_populism_USA.webp',
+    bopIconName: 'Same as ideology',
+    bopIconMode: 'builtin'
   },
   event: {
     title: 'Major Event',
@@ -113,8 +119,9 @@ const assetUrls = {
 };
 const objectUrls = new Map();
 const customIconUrls = new Map();
-const COUNTRY_ICON_MODES = ['ideology','faction','economy','government'];
-const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon', economy:'custom-economy-icon', government:'custom-government-icon'};
+const COUNTRY_ICON_MODES = ['ideology','faction','economy','government','bop'];
+const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon', economy:'custom-economy-icon', government:'custom-government-icon', bop:'custom-bop-icon'};
+const PRESET_ASSET_KEYS = new Set(['focus','spirit1','spirit2','spirit3','spirit4']);
 
 const SOUND_PREF_KEY = 'tfr-sound-muted-v1';
 const SOUND_URLS = {
@@ -315,7 +322,26 @@ function countryIconSrc(mode){
   if(selected==='custom')return customIconUrls.get(mode)||'';
   return state.country?.[mode+'Icon']||'';
 }
+function savedPresetForAsset(key){
+  if(key==='focus')return state.country?.focusPreset||'';
+  return state.country?.spiritPresets?.[key]||'';
+}
+function setSavedPresetForAsset(key,value){
+  if(key==='focus')state.country.focusPreset=value;
+  else{
+    if(!state.country.spiritPresets||typeof state.country.spiritPresets!=='object')state.country.spiritPresets={spirit1:'',spirit2:'',spirit3:'',spirit4:''};
+    state.country.spiritPresets[key]=value;
+  }
+}
+function applySavedPresetAssets(){
+  for(const key of PRESET_ASSET_KEYS){
+    const saved=savedPresetForAsset(key);
+    if(saved==='__none__')assetUrls[key]='';
+    else if(saved)assetUrls[key]=saved;
+  }
+}
 async function restoreAssets(){
+  applySavedPresetAssets();
   for(const key of Object.keys(assetUrls)){
     try{ const blob=await dbGet(key); if(blob){setObjectUrl(key,blob);await noteAssetAnimation(key,blob)} }catch(e){ console.warn('asset restore failed',key,e); }
   }
@@ -359,7 +385,10 @@ function updateOutputs(){
 async function handleAssetInput(key, input){
   const file=input.files?.[0]; if(!file) return;
   if(!looksLikeImageFile(file)){ alert('Please choose an image file.'); input.value=''; return; }
-  try{ await dbSet(key,file); setObjectUrl(key,file); await noteAssetAnimation(key,file); imageCache.clear(); updateThumbs(); scheduleRender(); }
+  try{
+    if(PRESET_ASSET_KEYS.has(key))setSavedPresetForAsset(key,'');
+    await dbSet(key,file); setObjectUrl(key,file); await noteAssetAnimation(key,file); saveState(); imageCache.clear(); updateThumbs(); scheduleRender();
+  }
   catch(e){ alert('Could not store that image locally.'); console.error(e); }
   input.value='';
 }
@@ -379,20 +408,34 @@ async function clearAsset(key){
   if(objectUrls.has(key)){URL.revokeObjectURL(objectUrls.get(key));objectUrls.delete(key);}
   assetUrls[key]=assetDefaults[key]; clearAssetAnimation(key); resetAssetTransform(key); saveState(); imageCache.clear(); updateThumbs(); bindValuesOnly(); updateOutputs(); scheduleRender();
 }
+async function emptySpirit(key){
+  if(!/^spirit[1-4]$/.test(key))return;
+  await removeStoredAsset(key);
+  setSavedPresetForAsset(key,'__none__');
+  assetUrls[key]='';
+  saveState();imageCache.clear();updateThumbs();scheduleRender();
+}
 
 function updateThumbs(){
   const map={leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb',spirit1:'spirit1Thumb',spirit2:'spirit2Thumb',spirit3:'spirit3Thumb',spirit4:'spirit4Thumb'};
   for(const [key,id] of Object.entries(map)){
-    const img=$('#'+id);if(img)img.src=assetUrls[key];
+    const img=$('#'+id),src=assetUrls[key]||'';
+    if(img){
+      if(src){img.src=src;img.hidden=false}
+      else{img.removeAttribute('src');img.hidden=true}
+    }
     const clear=$(`[data-clear-asset="${key}"]`); if(clear)clear.hidden=!objectUrls.has(key);
   }
-  const labels={ideology:'Ideology',faction:'Faction',economy:'Economy',government:'Government'};
+  const labels={ideology:'Ideology',faction:'Faction',economy:'Economy',government:'Government',bop:'Bop'};
   for(const mode of COUNTRY_ICON_MODES){
     const img=$('#'+mode+'Thumb'),name=$('#'+mode+'Name'),button=$('#choose'+labels[mode]),src=countryIconSrc(mode);
     if(img){if(src){img.src=src;img.hidden=false}else{img.removeAttribute('src');img.hidden=true}}
     button?.classList.toggle('no-icon',!src);
     if(name)name.textContent=countryIconMode(mode)==='none'?'No icon':(state.country[mode+'IconName']||`Selected ${mode}`);
   }
+  const bopToggle=$('#powerBalanceEnabled');
+  if(bopToggle)bopToggle.checked=state.country.powerBalanceEnabled!==false;
+  $$('.bop-field').forEach(label=>label.classList.toggle('disabled-field',state.country.powerBalanceEnabled===false));
 }
 
 function loadImage(src){
@@ -470,12 +513,13 @@ async function renderCountry(seq){
     loadAssetImage('factionIcon',countryIconSrc('faction')),
     loadAssetImage('economyIcon',countryIconSrc('economy')),
     loadAssetImage('governmentIcon',countryIconSrc('government')),
+    loadAssetImage('bopIcon',countryIconSrc('bop')),
     loadAssetImage('spirit1',assetUrls.spirit1),
     loadAssetImage('spirit2',assetUrls.spirit2),
     loadAssetImage('spirit3',assetUrls.spirit3),
     loadAssetImage('spirit4',assetUrls.spirit4)
   ]); if(seq!==renderSeq)return;
-  const [panel,leaderFrame,goalBg,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,closeBtn,leader,focus,ideology,faction,economy,government,...spirits]=imgs;
+  const [panel,leaderFrame,goalBg,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,closeBtn,leader,focus,ideology,faction,economy,government,bop,...spirits]=imgs;
 
   if(panel)ctx.drawImage(panel,0,0,719,394);
 
@@ -483,7 +527,6 @@ async function renderCountry(seq){
   if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
 
   if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
-  drawCoverTransform(focus,198,27,76,76,state.country.transforms?.focus);
   if(closeBtn)ctx.drawImage(closeBtn,519,14,26,26);
   if(progressBg)ctx.drawImage(progressBg,292,92,237,6);
   if(progress){
@@ -492,6 +535,7 @@ async function renderCountry(seq){
     if(width>0)ctx.drawImage(progress,0,0,width,Math.min(6,progress.height||6),292,92,width,6);
   }
   if(progressFrame)ctx.drawImage(progressFrame,291,91,239,8);
+  drawCenteredTransform(focus,236,65,1,76,76,state.country.transforms?.focus);
 
   drawCentered(faction,632,62,1,86,86);
   drawCentered(ideology,224,166,1,76,76);
@@ -530,9 +574,11 @@ async function renderCountry(seq){
   if(split){ctx.fillStyle='#d8d8d8';ctx.fillText(split[1],188,265,175);const labelW=ctx.measureText(split[1]+' ').width;ctx.fillStyle='#e5b025';ctx.fillText(split[2].trim(),188+labelW,265,175-labelW)}
   else{ctx.fillStyle='#e5b025';ctx.fillText(election,188,265,175)}
 
-  ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458,244,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458,266,72);
-  drawCentered(ideology,405,254,1,48,48);
+  if(state.country.powerBalanceEnabled!==false){
+    ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458,238,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458,260,72);
+    drawCentered(bop,405,248,1,48,48);
+  }
 
   ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
   ctx.fillStyle='#e5b025';ctx.fillText(state.country.economyText,90,372,154);
@@ -542,7 +588,7 @@ async function renderCountry(seq){
   governmentLines.forEach((line,index)=>ctx.fillText(line,314,326+index*15,118));
 
   ctx.textAlign='left';ctx.textBaseline='middle';
-  const rowHeight=17,partyX=508,partyY=218,partyW=196;
+  const rowHeight=17,partyX=508,partyY=222,partyW=196;
   const shown=slices.slice(0,10);
   shown.forEach((slice,index)=>{
     const y=partyY+index*rowHeight;
@@ -554,9 +600,9 @@ async function renderCountry(seq){
     ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18,y,178);
   });
 
-  if(occupiedBtn)ctx.drawImage(occupiedBtn,313,358,34,33);
-  if(exileBtn)ctx.drawImage(exileBtn,348,358,34,33);
-  if(subjectsBtn)ctx.drawImage(subjectsBtn,383,358,34,33);
+  if(occupiedBtn)ctx.drawImage(occupiedBtn,258,358,34,33);
+  if(exileBtn)ctx.drawImage(exileBtn,294,358,34,33);
+  if(subjectsBtn)ctx.drawImage(subjectsBtn,330,358,34,33);
   ctx.shadowColor='transparent';
 }
 async function renderEvent(seq){
@@ -630,7 +676,7 @@ function addPieSlice(){
   saveState();renderPieEditor();scheduleRender();
 }
 
-function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','ideologyIcon','factionIcon','economyIcon','governmentIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
+function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','ideologyIcon','factionIcon','economyIcon','governmentIcon','bopIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
 function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
 function activeAnimationDuration(){let duration=0;for(const key of animatedKeysForTool())if(animatedAssets.has(key))duration=Math.max(duration,animatedDurations.get(key)||1000);return Math.max(100,Math.min(15000,duration||1000))}
 function ensureAnimationLoop(){if(animationLoopId||!activeToolHasAnimation()||exportInProgress)return;const tick=now=>{animationLoopId=0;if(!activeToolHasAnimation()||exportInProgress)return;if(!document.hidden&&now-animationLastPaint>=50&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
@@ -663,39 +709,111 @@ async function loadManifest(){
   return manifest;
 }
 function normalizeIconSrc(src){ if(src.startsWith('./'))return '../'+src.slice(2); if(src.startsWith('/'))return '..'+src; return src; }
-const ICON_PICKER_INFO={ideology:{title:'Choose ideology icon',category:'ideology'},faction:{title:'Choose alliance / faction icon',category:'factions'},economy:{title:'Choose economy type',category:'economy'},government:{title:'Choose government type',category:'government'}};
+const ICON_PICKER_INFO={
+  ideology:{title:'Choose ideology icon',category:'ideology',kind:'icon',emptyLabel:'No icon'},
+  faction:{title:'Choose alliance / faction icon',category:'factions',kind:'icon',emptyLabel:'No icon'},
+  economy:{title:'Choose economy type',category:'economy',kind:'icon',emptyLabel:'No icon'},
+  government:{title:'Choose government type',category:'government',kind:'icon',emptyLabel:'No icon'},
+  bop:{title:'Choose balance of power icon',category:'bop',kind:'icon',emptyLabel:'No icon'},
+  focus:{title:'Choose national focus image',category:'focus',kind:'asset',emptyLabel:'No image'},
+  spirit1:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
+  spirit2:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
+  spirit3:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
+  spirit4:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'}
+};
 async function openIconPicker(mode){
-  iconMode=mode; $('#iconDialogTitle').textContent=ICON_PICKER_INFO[mode]?.title||'Choose icon'; $('#iconSearch').value=''; await renderIconGrid(''); $('#iconDialog').showModal(); setTimeout(()=>$('#iconSearch').focus(),50);
+  iconMode=mode;
+  const info=ICON_PICKER_INFO[mode]||ICON_PICKER_INFO.ideology;
+  $('#iconDialogTitle').textContent=info.title;
+  $('#iconNoIconBtn').textContent=info.emptyLabel||'No icon';
+  $('#iconSearch').value='';
+  await renderIconGrid('');
+  $('#iconDialog').showModal();
+  setTimeout(()=>$('#iconSearch').focus(),50);
 }
 async function removeStoredCustomIcon(mode){
   await dbDelete(CUSTOM_ICON_DB_KEYS[mode]).catch(()=>{});
   if(customIconUrls.has(mode)){URL.revokeObjectURL(customIconUrls.get(mode));customIconUrls.delete(mode)}
   clearAssetAnimation(mode+'Icon');
 }
+async function removeStoredAsset(key){
+  await dbDelete(key).catch(()=>{});
+  if(objectUrls.has(key)){URL.revokeObjectURL(objectUrls.get(key));objectUrls.delete(key)}
+  clearAssetAnimation(key);
+}
+async function chooseBuiltInAsset(key,src){
+  await removeStoredAsset(key);
+  setSavedPresetForAsset(key,src||'__none__');
+  assetUrls[key]=src||'';
+  saveState();imageCache.clear();updateThumbs();$('#iconDialog').close();scheduleRender();
+}
 async function chooseBuiltInIcon(mode,src,name){
-  await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='builtin';state.country[mode+'Icon']=src;state.country[mode+'IconName']=name;
-  if(mode==='economy')state.country.economyText=name;if(mode==='government')state.country.governmentText=name;
+  const info=ICON_PICKER_INFO[mode];
+  if(info?.kind==='asset'){await chooseBuiltInAsset(mode,src);return}
+  await removeStoredCustomIcon(mode);
+  state.country[mode+'IconMode']='builtin';
+  state.country[mode+'Icon']=src;
+  state.country[mode+'IconName']=name;
+  if(mode==='economy')state.country.economyText=name;
+  if(mode==='government')state.country.governmentText=name;
   saveState();updateThumbs();bindValuesOnly();imageCache.clear();$('#iconDialog').close();scheduleRender();
 }
 async function chooseNoIcon(mode){
-  await removeStoredCustomIcon(mode);state.country[mode+'IconMode']='none';state.country[mode+'Icon']='';state.country[mode+'IconName']='No icon';saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+  const info=ICON_PICKER_INFO[mode];
+  if(info?.kind==='asset'){await chooseBuiltInAsset(mode,'');return}
+  await removeStoredCustomIcon(mode);
+  state.country[mode+'IconMode']='none';
+  state.country[mode+'Icon']='';
+  state.country[mode+'IconName']='No icon';
+  saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
 }
-async function handleCustomIconInput(input){
-  const file=input.files?.[0],mode=iconMode;input.value='';if(!file)return;
+function readableUploadName(file){
+  return (file.name||'Custom icon').replace(/\.[^.]+$/,'').replace(/^(?:ZZZ_|USC_|GFX_|bop_|generic_)/i,'').replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
+async function handlePickerUpload(input){
+  const file=input.files?.[0],mode=iconMode;
+  input.value='';
+  if(!file)return;
   if(!looksLikeImageFile(file)){alert('Please choose an image file.');return}
+  const info=ICON_PICKER_INFO[mode];
+  if(info?.kind==='asset'){
+    try{
+      setSavedPresetForAsset(mode,'');
+      await dbSet(mode,file);setObjectUrl(mode,file);await noteAssetAnimation(mode,file);
+      saveState();updateThumbs();imageCache.clear();$('#iconDialog').close();scheduleRender();
+    }catch(e){alert('Could not store that image locally.');console.error(e)}
+    return;
+  }
   try{
-    await dbSet(CUSTOM_ICON_DB_KEYS[mode],file);setCustomIconObjectUrl(mode,file);await noteAssetAnimation(mode+'Icon',file);state.country[mode+'IconMode']='custom';state.country[mode+'IconName']=file.name||'Custom icon';
-    const readable=(file.name||'Custom icon').replace(/\.[^.]+$/,'').replace(/^(?:ZZZ_|USC_)/i,'').replace(/[_-]+/g,' ').replace(/\w/g,c=>c.toUpperCase());
-    if(mode==='economy')state.country.economyText=readable;if(mode==='government')state.country.governmentText=readable;
+    await dbSet(CUSTOM_ICON_DB_KEYS[mode],file);
+    setCustomIconObjectUrl(mode,file);
+    await noteAssetAnimation(mode+'Icon',file);
+    state.country[mode+'IconMode']='custom';
+    state.country[mode+'IconName']=file.name||'Custom icon';
+    const readable=readableUploadName(file);
+    if(mode==='economy')state.country.economyText=readable;
+    if(mode==='government')state.country.governmentText=readable;
     saveState();updateThumbs();bindValuesOnly();imageCache.clear();$('#iconDialog').close();scheduleRender();
   }catch(e){alert('Could not store that image locally.');console.error(e)}
 }
 async function renderIconGrid(search){
-  const list=await loadManifest(); const cat=ICON_PICKER_INFO[iconMode]?.category||'ideology'; const q=search.trim().toLowerCase();
+  const list=await loadManifest();
+  const cat=ICON_PICKER_INFO[iconMode]?.category||'ideology';
+  const q=search.trim().toLowerCase();
   const filtered=list.filter(x=>x.category===cat && (!q || x.name.toLowerCase().includes(q) || x.id.toLowerCase().includes(q))).slice(0,500);
-  const grid=$('#iconGrid'); grid.innerHTML=''; const frag=document.createDocumentFragment();
-  for(const item of filtered){ const b=document.createElement('button'); b.type='button';b.className='icon-option'; const src=normalizeIconSrc(item.src); b.innerHTML=`<img loading="lazy" src="${src}" alt=""><span>${escapeHtml(item.name)}</span>`; b.onclick=()=>chooseBuiltInIcon(iconMode,src,item.name); frag.appendChild(b); }
-  grid.appendChild(frag); if(!filtered.length)grid.innerHTML='<div class="empty">No matching icons.</div>';
+  const grid=$('#iconGrid');
+  grid.innerHTML='';
+  const frag=document.createDocumentFragment();
+  for(const item of filtered){
+    const b=document.createElement('button');
+    b.type='button';b.className='icon-option';
+    const src=normalizeIconSrc(item.src);
+    b.innerHTML=`<img loading="lazy" src="${src}" alt=""><span>${escapeHtml(item.name)}</span>`;
+    b.onclick=()=>chooseBuiltInIcon(iconMode,src,item.name);
+    frag.appendChild(b);
+  }
+  grid.appendChild(frag);
+  if(!filtered.length)grid.innerHTML='<div class="empty">No matching images.</div>';
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
@@ -829,7 +947,11 @@ function init(){
   $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
   for(const key of ['spirit1','spirit2','spirit3','spirit4'])$('#'+key+'File').onchange=e=>handleAssetInput(key,e.target);
   $$('[data-clear-asset]').forEach(b=>b.onclick=()=>clearAsset(b.dataset.clearAsset));
-  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#chooseEconomy').onclick=()=>openIconPicker('economy'); $('#chooseGovernment').onclick=()=>openIconPicker('government'); $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#iconUploadInput').onchange=e=>handleCustomIconInput(e.target); $('#iconNoIconBtn').onclick=()=>chooseNoIcon(iconMode); $('#addPieSlice').onclick=addPieSlice;
+  $$('[data-spirit-preset]').forEach(b=>b.onclick=()=>openIconPicker(b.dataset.spiritPreset));
+  $$('[data-empty-spirit]').forEach(b=>b.onclick=()=>emptySpirit(b.dataset.emptySpirit));
+  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#chooseEconomy').onclick=()=>openIconPicker('economy'); $('#chooseGovernment').onclick=()=>openIconPicker('government'); $('#chooseBop').onclick=()=>openIconPicker('bop'); $('#chooseFocus').onclick=()=>openIconPicker('focus');
+  $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#iconUploadInput').onchange=e=>handlePickerUpload(e.target); $('#iconNoIconBtn').onclick=()=>chooseNoIcon(iconMode); $('#addPieSlice').onclick=addPieSlice;
+  $('#powerBalanceEnabled').onchange=e=>{state.country.powerBalanceEnabled=!!e.target.checked;saveState();updateThumbs();scheduleRender();};
   $('#exportBtn').onclick=exportPNG; $('#resetToolBtn').onclick=()=>{if(confirm('Reset this GFX to its defaults?')) resetTool();};
   switchTool(activeTool); restoreAssets();
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>scheduleRender()).catch(()=>{});
