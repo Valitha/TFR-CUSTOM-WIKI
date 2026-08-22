@@ -613,12 +613,13 @@ async function renderCountry(seq){
   withPlacement(positions.factionLower,130,319,()=>drawCentered(factionLower,130,319,1,68,68));
   withPlacement(positions.government,212,334,()=>drawCentered(government,212,334,1,68,68));
 
-  const slices=(state.country.ideologySlices||[]).filter(x=>Number(x.value)>0);
-  const total=slices.reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0)||1;
+  const partySlices=state.country.ideologySlices||[];
+  const pieSlices=partySlices.filter(x=>Number(x.value)>0);
+  const total=pieSlices.reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0)||1;
   withPlacement(positions.pie,441,335,()=>{
     const pieCx=441,pieCy=335,pieR=39;
     let angle=-Math.PI/2;
-    for(const slice of slices){
+    for(const slice of pieSlices){
       const amount=Math.max(0,Number(slice.value)||0)/total;
       ctx.beginPath();ctx.moveTo(pieCx,pieCy);ctx.arc(pieCx,pieCy,pieR,angle,angle+Math.PI*2*amount);ctx.closePath();ctx.fillStyle=slice.color||'#777';ctx.fill();angle+=Math.PI*2*amount;
     }
@@ -675,7 +676,7 @@ async function renderCountry(seq){
   withPlacement(positions.partyList,606,300,()=>{
     ctx.textAlign='left';ctx.textBaseline='middle';
     const rowHeight=17,partyX=508,partyY=222,partyW=196;
-    const shown=slices.slice(0,10);
+    const shown=partySlices.slice(0,10);
     shown.forEach((slice,index)=>{
       const y=partyY+index*rowHeight;
       if(index===0&&partyRow)ctx.drawImage(partyRow,partyX,y-7,partyW,15);
