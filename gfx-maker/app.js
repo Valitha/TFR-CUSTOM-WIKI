@@ -634,12 +634,20 @@ async function renderCountry(seq){
     });
   }
 
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#e5b025';
   ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
-  ctx.fillStyle='#e5b025';ctx.fillText(state.country.economyText,90,372,154);
-  ctx.font=textFont(fitText(state.country.governmentText,118,Number(ts.government)||12,8,true),true);
-  ctx.fillStyle='#e7e7e7';
-  const governmentLines=wrapLines(state.country.governmentText,118,ctx.font,3);
-  governmentLines.forEach((line,index)=>ctx.fillText(line,314,326+index*15,118));
+  ctx.fillText(state.country.economyText,90,372,154);
+
+  const governmentSize=Number(ts.government)||12;
+  const governmentFont=textFont(governmentSize,true);
+  const governmentLines=wrapLines(state.country.governmentText,118,governmentFont,3);
+  const governmentLineHeight=Math.max(12,Math.round(governmentSize*1.25));
+  const governmentStartY=334-((governmentLines.length-1)*governmentLineHeight)/2;
+  ctx.font=governmentFont;ctx.fillStyle='#e7e7e7';
+  governmentLines.forEach((line,index)=>ctx.fillText(line,314,governmentStartY+index*governmentLineHeight,118));
+  ctx.restore();
 
   withPlacement(positions.partyList,606,300,()=>{
     ctx.textAlign='left';ctx.textBaseline='middle';
