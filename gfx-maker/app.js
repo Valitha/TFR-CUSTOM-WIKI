@@ -579,7 +579,7 @@ async function renderCountry(seq){
   spirits.forEach((spirit,index)=>drawCentered(spirit,spiritX[index]+spiritsPos.x,166+spiritsPos.y,1,62,62));
 
   drawCentered(economy,47+economyPos.x,319+economyPos.y,1,68,68);
-  drawCentered(factionLower,130+factionLowerPos.x,322+factionLowerPos.y,1,68,68);
+  drawCentered(factionLower,130+factionLowerPos.x,319+factionLowerPos.y,1,68,68);
   drawCentered(government,212+governmentPos.x,334+governmentPos.y,1,68,68);
 
   const slices=(state.country.ideologySlices||[]).filter(x=>Number(x.value)>0);
@@ -696,7 +696,7 @@ function renderPieEditor(){
     const row=document.createElement('div');row.className='pie-slice-row';
     const validColor=/^#[0-9a-f]{6}$/i.test(slice.color||'')?slice.color:'#777777';
     row.innerHTML=`<input class="pie-label" type="text" value="${escapeHtml(slice.label||`Slice ${index+1}`)}" aria-label="Slice label"><input class="pie-value" type="number" min="0" max="1000" step="1" value="${Number(slice.value)||0}" aria-label="Slice share"><input class="pie-color" type="color" value="${validColor}" aria-label="Slice colour"><button class="mini-btn pie-remove" type="button" aria-label="Remove ideology slice">×</button>`;
-    row.querySelector('.pie-label').oninput=e=>{slice.label=e.target.value;saveState();};
+    row.querySelector('.pie-label').oninput=e=>{slice.label=e.target.value;saveState();scheduleRender();};
     row.querySelector('.pie-value').oninput=e=>{slice.value=Math.max(0,Number(e.target.value)||0);saveState();updatePieTotal();scheduleRender();};
     row.querySelector('.pie-color').oninput=e=>{slice.color=e.target.value;saveState();scheduleRender();};
     row.querySelector('.pie-remove').onclick=()=>{if(slices.length<=1)return;slices.splice(index,1);saveState();renderPieEditor();scheduleRender();};
