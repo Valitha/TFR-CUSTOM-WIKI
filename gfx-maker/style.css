@@ -51,22 +51,24 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
 .advanced-card[open] summary{border-bottom:1px solid var(--line)}
 .advanced-body{padding:8px 10px 10px;display:grid;gap:10px}
 .advanced-subtitle{font-size:11px;color:#bca9c2;text-transform:uppercase;letter-spacing:.08em}
-.transform-stack{display:grid;gap:8px}
-.transform-group{border:1px solid #302334;background:#0b070d;padding:7px;display:grid;gap:5px}
-.transform-group>b{font-size:12px;font-weight:400;color:#fff;margin-bottom:2px}
-.transform-group label,.text-size-list label{display:grid!important;grid-template-columns:76px minmax(0,1fr) 46px;align-items:center;gap:8px;margin:0!important;padding:3px 0;color:#d7cad9;font-size:11px}
-.transform-group input[type="range"],.text-size-list input[type="range"]{width:100%;accent-color:var(--purple)}
-.transform-group output,.text-size-list output{text-align:right;color:var(--orange);font-size:10px}
+.transform-stack,.position-stack{display:grid;gap:8px}
+.position-stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+.transform-group,.position-group{border:1px solid #302334;background:#0b070d;padding:7px;display:grid;gap:5px}
+.transform-group>b,.position-group>b{font-size:12px;font-weight:400;color:#fff;margin-bottom:2px}
+.transform-group label,.position-group label,.text-size-list label{display:grid!important;grid-template-columns:76px minmax(0,1fr) 46px;align-items:center;gap:8px;margin:0!important;padding:3px 0;color:#d7cad9;font-size:11px}
+.transform-group input[type="range"],.position-group input[type="range"],.text-size-list input[type="range"]{width:100%;accent-color:var(--purple)}
+.transform-group output,.position-group output,.text-size-list output{text-align:right;color:var(--orange);font-size:10px}
 .text-size-list{display:grid;gap:2px}
 .side-note,.text-size-help{display:none!important}
 @media(max-width:720px){
   .asset-clear-x{top:3px;right:3px;width:22px;height:22px;font-size:16px}
   .wide-preview img{width:110px;height:80px}
-  .transform-group label,.text-size-list label{grid-template-columns:68px minmax(0,1fr) 42px;gap:6px}
+  .transform-group label,.position-group label,.text-size-list label{grid-template-columns:68px minmax(0,1fr) 42px;gap:6px}
   .advanced-body{padding:7px 8px 9px}
+  .position-stack{grid-template-columns:1fr}
 }
 
-/* Let country ideology and faction icons use a built-in icon, a custom upload, or no icon. */
+/* These pickers can use a built-in image, an upload, or an empty slot. */
 .dialog-head{gap:12px}
 .dialog-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:0 0 auto}
 .dialog-head-actions .ui-btn{min-height:32px;padding:5px 9px;font-family:'Electrolize',Arial,sans-serif;color:#fff}
@@ -94,13 +96,13 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
 .export-progress-track i{display:block;width:0;height:100%;background:var(--purple);transition:width .08s linear}
 
 
-/* Keep the new country controls tidy without changing the other GFX tools. */
+/* Keep the Country controls tidy without changing the other GFX tools. */
 .country-main-assets{grid-template-columns:repeat(2,minmax(0,1fr))}
 .country-picker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0 13px}
 .spirit-editor-card{border:1px solid var(--line);background:#100b12;margin:10px 0 13px;padding:9px}
 .spirit-editor-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
 .spirit-editor-head b{font-size:13px}.spirit-editor-head small{font-size:10px;color:var(--muted);text-align:right}
-.spirit-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin:0}.spirit-grid .asset-card{padding:6px}.spirit-grid .asset-card img{height:58px}
+.spirit-grid{grid-template-columns:repeat(3,minmax(0,1fr));margin:0}.spirit-grid .asset-card{padding:6px}.spirit-grid .asset-card img{height:58px}
 @media(max-width:720px){
   .country-picker-grid{grid-template-columns:1fr}
   .country-main-assets{grid-template-columns:repeat(2,minmax(0,1fr))}

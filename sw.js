@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tfr-wiki-shell-1.0.11';
+const CACHE_NAME = 'tfr-wiki-shell-1.0.12';
 const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const CORE = [
   HTML2CANVAS_URL,
@@ -101,6 +101,9 @@ const CORE = [
   './gfx-maker/assets/country/pol_leader_frame.png',
   './gfx-maker/assets/country/pol_goal_bg.png',
   './gfx-maker/assets/country/add_national_goal_button.png',
+  './gfx-maker/assets/country/bop_glow_0.png',
+  './gfx-maker/assets/country/bop_glow_1.png',
+  './gfx-maker/assets/country/bop_glow_2.png',
   './gfx-maker/assets/country/pol_goal_progress.png',
   './gfx-maker/assets/country/pol_goal_progress_bg.png',
   './gfx-maker/assets/country/pol_goal_progress_frame.png',

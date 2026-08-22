@@ -31,7 +31,7 @@ const DEFAULTS = {
     powerBalanceLevels: '1/1',
     powerBalanceEnabled: true,
     focusPreset: '',
-    spiritPresets: { spirit1: '', spirit2: '', spirit3: '', spirit4: '' },
+    spiritPresets: { spirit1: '', spirit2: '', spirit3: '', spirit4: '', spirit5: '', spirit6: '' },
     economyText: 'Capitalist Economy',
     governmentText: 'Semi Presidential System',
     textSizes: {
@@ -50,6 +50,19 @@ const DEFAULTS = {
       leader: { x: 0, y: 0, size: 100 },
       focus: { x: 0, y: 0, size: 100 }
     },
+    positions: {
+      focusPanel: { x: 0, y: 0 },
+      ideology: { x: 0, y: 0 },
+      factionTop: { x: 0, y: 0 },
+      factionLower: { x: 0, y: 0 },
+      economy: { x: 0, y: 0 },
+      government: { x: 0, y: 0 },
+      bop: { x: 0, y: -4 },
+      pie: { x: 6, y: 0 },
+      spirits: { x: 0, y: 0 },
+      partyList: { x: 0, y: 4 },
+      utilityButtons: { x: -2, y: 0 }
+    },
     ideologySlices: [
       { label: 'Primary', value: 45, color: '#d94f91' },
       { label: 'Secondary', value: 25, color: '#e3c94f' },
@@ -59,9 +72,12 @@ const DEFAULTS = {
     ideologyIcon: '../assets/icon-library/ideology/right_populism_USA.webp',
     ideologyIconName: 'right populism USA',
     ideologyIconMode: 'builtin',
-    factionIcon: '../assets/icon-library/factions/GFX_NATO_Member.webp',
-    factionIconName: 'NATO Member',
+    factionIcon: '../assets/icon-library/factions/GFX_NATO_leader.webp',
+    factionIconName: 'NATO leader',
     factionIconMode: 'builtin',
+    factionLowerIcon: '../assets/icon-library/factions/GFX_NATO_Member.webp',
+    factionLowerIconName: 'NATO Member',
+    factionLowerIconMode: 'builtin',
     economyIcon: './assets/icon-library/economy/ZZZ_capitalist_economy.png',
     economyIconName: 'Capitalist Economy',
     economyIconMode: 'builtin',
@@ -115,13 +131,15 @@ const assetUrls = {
   spirit1: placeholder('focus_unknown.png'),
   spirit2: placeholder('focus_unknown.png'),
   spirit3: placeholder('focus_unknown.png'),
-  spirit4: placeholder('focus_unknown.png')
+  spirit4: placeholder('focus_unknown.png'),
+  spirit5: placeholder('focus_unknown.png'),
+  spirit6: placeholder('focus_unknown.png')
 };
 const objectUrls = new Map();
 const customIconUrls = new Map();
-const COUNTRY_ICON_MODES = ['ideology','faction','economy','government','bop'];
-const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon', economy:'custom-economy-icon', government:'custom-government-icon', bop:'custom-bop-icon'};
-const PRESET_ASSET_KEYS = new Set(['focus','spirit1','spirit2','spirit3','spirit4']);
+const COUNTRY_ICON_MODES = ['ideology','faction','factionLower','economy','government','bop'];
+const CUSTOM_ICON_DB_KEYS = {ideology:'custom-ideology-icon', faction:'custom-faction-icon', factionLower:'custom-faction-lower-icon', economy:'custom-economy-icon', government:'custom-government-icon', bop:'custom-bop-icon'};
+const PRESET_ASSET_KEYS = new Set(['focus','spirit1','spirit2','spirit3','spirit4','spirit5','spirit6']);
 
 const SOUND_PREF_KEY = 'tfr-sound-muted-v1';
 const SOUND_URLS = {
@@ -329,7 +347,7 @@ function savedPresetForAsset(key){
 function setSavedPresetForAsset(key,value){
   if(key==='focus')state.country.focusPreset=value;
   else{
-    if(!state.country.spiritPresets||typeof state.country.spiritPresets!=='object')state.country.spiritPresets={spirit1:'',spirit2:'',spirit3:'',spirit4:''};
+    if(!state.country.spiritPresets||typeof state.country.spiritPresets!=='object')state.country.spiritPresets={spirit1:'',spirit2:'',spirit3:'',spirit4:'',spirit5:'',spirit6:''};
     state.country.spiritPresets[key]=value;
   }
 }
@@ -380,6 +398,10 @@ function updateOutputs(){
     const value=Number(getPath(state,out.dataset.transformOutput))||0;
     out.textContent=`${value}%`;
   });
+  $$('[data-position-output]').forEach(out=>{
+    const value=Number(getPath(state,out.dataset.positionOutput))||0;
+    out.textContent=`${value}px`;
+  });
 }
 
 async function handleAssetInput(key, input){
@@ -396,7 +418,7 @@ async function handleAssetInput(key, input){
 const assetDefaults={
   flag:placeholder('flag_eu.png'), leader:placeholder('leader_unknown.png'), focus:placeholder('focus_unknown.png'),
   event:placeholder('major_news.png'), news:placeholder('local_news.png'), super:placeholder('super_event.png'),
-  spirit1:placeholder('focus_unknown.png'), spirit2:placeholder('focus_unknown.png'), spirit3:placeholder('focus_unknown.png'), spirit4:placeholder('focus_unknown.png')
+  spirit1:placeholder('focus_unknown.png'), spirit2:placeholder('focus_unknown.png'), spirit3:placeholder('focus_unknown.png'), spirit4:placeholder('focus_unknown.png'), spirit5:placeholder('focus_unknown.png'), spirit6:placeholder('focus_unknown.png')
 };
 const transformPathByAsset={flag:'country.transforms.flag',leader:'country.transforms.leader',focus:'country.transforms.focus',event:'event.transform',news:'news.transform',super:'super.transform'};
 function resetAssetTransform(key){
@@ -409,7 +431,7 @@ async function clearAsset(key){
   assetUrls[key]=assetDefaults[key]; clearAssetAnimation(key); resetAssetTransform(key); saveState(); imageCache.clear(); updateThumbs(); bindValuesOnly(); updateOutputs(); scheduleRender();
 }
 async function emptySpirit(key){
-  if(!/^spirit[1-4]$/.test(key))return;
+  if(!/^spirit[1-6]$/.test(key))return;
   await removeStoredAsset(key);
   setSavedPresetForAsset(key,'__none__');
   assetUrls[key]='';
@@ -417,7 +439,7 @@ async function emptySpirit(key){
 }
 
 function updateThumbs(){
-  const map={leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb',spirit1:'spirit1Thumb',spirit2:'spirit2Thumb',spirit3:'spirit3Thumb',spirit4:'spirit4Thumb'};
+  const map={leader:'leaderThumb',focus:'focusThumb',event:'eventThumb',news:'newsThumb',super:'superThumb',spirit1:'spirit1Thumb',spirit2:'spirit2Thumb',spirit3:'spirit3Thumb',spirit4:'spirit4Thumb',spirit5:'spirit5Thumb',spirit6:'spirit6Thumb'};
   for(const [key,id] of Object.entries(map)){
     const img=$('#'+id),src=assetUrls[key]||'';
     if(img){
@@ -426,7 +448,7 @@ function updateThumbs(){
     }
     const clear=$(`[data-clear-asset="${key}"]`); if(clear)clear.hidden=!objectUrls.has(key);
   }
-  const labels={ideology:'Ideology',faction:'Faction',economy:'Economy',government:'Government',bop:'Bop'};
+  const labels={ideology:'Ideology',faction:'Faction',factionLower:'FactionLower',economy:'Economy',government:'Government',bop:'Bop'};
   for(const mode of COUNTRY_ICON_MODES){
     const img=$('#'+mode+'Thumb'),name=$('#'+mode+'Name'),button=$('#choose'+labels[mode]),src=countryIconSrc(mode);
     if(img){if(src){img.src=src;img.hidden=false}else{img.removeAttribute('src');img.hidden=true}}
@@ -450,6 +472,7 @@ function loadAssetImage(key,src){
   return loadImage(src);
 }
 function cleanTransform(t){return{x:Number(t?.x)||0,y:Number(t?.y)||0,size:Math.max(10,Number(t?.size)||100)}}
+function cleanPosition(p){return{x:Number(p?.x)||0,y:Number(p?.y)||0}}
 function imageDimensions(im){const w=Number(im?.naturalWidth||im?.videoWidth||im?.width)||1,h=Number(im?.naturalHeight||im?.videoHeight||im?.height)||1;return{w,h}}
 function drawCover(im,x,y,w,h){if(!im)return;const size=imageDimensions(im),s=Math.max(w/size.w,h/size.h),sw=w/s,sh=h/s,sx=(size.w-sw)/2,sy=(size.h-sh)/2;ctx.drawImage(im,sx,sy,sw,sh,x,y,w,h)}
 function drawCoverTransform(im,x,y,w,h,t){
@@ -493,6 +516,7 @@ async function renderCountry(seq){
   setCanvas(719,394,'Country',2);
   ctx.clearRect(0,0,719,394);
   ctx.fillStyle='#000';ctx.fillRect(0,0,719,394);
+  const glowFrame=Math.floor(currentAnimationTime()/240)%3;
   const imgs=await Promise.all([
     loadImage('./assets/country/pol_view_bg_new.png'),
     loadImage('./assets/country/pol_leader_frame.png'),
@@ -507,54 +531,67 @@ async function renderCountry(seq){
     loadImage('./assets/country/icon_occupied_territories.png'),
     loadImage('./assets/country/icon_exiled_governments.png'),
     loadImage('./assets/country/icon_manage_subjects.png'),
+    loadImage(`./assets/country/bop_glow_${glowFrame}.png`),
     loadAssetImage('leader',assetUrls.leader),
     loadAssetImage('focus',assetUrls.focus),
     loadAssetImage('ideologyIcon',countryIconSrc('ideology')),
     loadAssetImage('factionIcon',countryIconSrc('faction')),
+    loadAssetImage('factionLowerIcon',countryIconSrc('factionLower')),
     loadAssetImage('economyIcon',countryIconSrc('economy')),
     loadAssetImage('governmentIcon',countryIconSrc('government')),
     loadAssetImage('bopIcon',countryIconSrc('bop')),
     loadAssetImage('spirit1',assetUrls.spirit1),
     loadAssetImage('spirit2',assetUrls.spirit2),
     loadAssetImage('spirit3',assetUrls.spirit3),
-    loadAssetImage('spirit4',assetUrls.spirit4)
+    loadAssetImage('spirit4',assetUrls.spirit4),
+    loadAssetImage('spirit5',assetUrls.spirit5),
+    loadAssetImage('spirit6',assetUrls.spirit6)
   ]); if(seq!==renderSeq)return;
-  const [panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,leader,focus,ideology,faction,economy,government,bop,...spirits]=imgs;
+  const [panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,bopGlow,leader,focus,ideology,factionTop,factionLower,economy,government,bop,...spirits]=imgs;
 
   if(panel)ctx.drawImage(panel,0,0,719,394);
 
   drawCoverTransform(leader,9,12,160,213,state.country.transforms?.leader);
   if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
 
-  if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
-  if(goalButton)ctx.drawImage(goalButton,278,24,258,83);
-  if(progressBg)ctx.drawImage(progressBg,292,92,237,6);
+  const positions=state.country.positions||DEFAULTS.country.positions;
+  const focusPos=cleanPosition(positions.focusPanel);
+  const focusX=focusPos.x,focusY=focusPos.y;
+  if(goalBg)ctx.drawImage(goalBg,185+focusX,12+focusY,359,107);
+  if(goalButton)ctx.drawImage(goalButton,278+focusX,24+focusY,258,83);
+  if(progressBg)ctx.drawImage(progressBg,292+focusX,92+focusY,237,6);
   if(progress){
     const amount=Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100;
     const width=Math.round(237*amount);
-    if(width>0)ctx.drawImage(progress,0,0,width,Math.min(6,progress.height||6),292,92,width,6);
+    if(width>0)ctx.drawImage(progress,0,0,width,Math.min(6,progress.height||6),292+focusX,92+focusY,width,6);
   }
-  if(progressFrame)ctx.drawImage(progressFrame,291,91,239,8);
-  drawCenteredTransform(focus,236,65,1,76,76,state.country.transforms?.focus);
+  if(progressFrame)ctx.drawImage(progressFrame,291+focusX,91+focusY,239,8);
+  drawCenteredTransform(focus,236+focusX,65+focusY,1,76,76,state.country.transforms?.focus);
 
-  drawCentered(faction,632,62,1,86,86);
-  drawCentered(ideology,224,166,1,76,76);
-  const spiritX=[312,380,448,516];
-  spirits.forEach((spirit,index)=>drawCentered(spirit,spiritX[index],166,1,62,62));
+  const factionTopPos=cleanPosition(positions.factionTop);
+  const factionLowerPos=cleanPosition(positions.factionLower);
+  const ideologyPos=cleanPosition(positions.ideology);
+  const spiritsPos=cleanPosition(positions.spirits);
+  const economyPos=cleanPosition(positions.economy);
+  const governmentPos=cleanPosition(positions.government);
+  drawCentered(factionTop,632+factionTopPos.x,62+factionTopPos.y,1,86,86);
+  drawCentered(ideology,224+ideologyPos.x,166+ideologyPos.y,1,76,76);
+  const spiritX=[323,391,459,527,595,663];
+  spirits.forEach((spirit,index)=>drawCentered(spirit,spiritX[index]+spiritsPos.x,166+spiritsPos.y,1,62,62));
 
-  drawCentered(economy,47,319,1,68,68);
-  drawCentered(faction,137,322,1,68,68);
-  drawCentered(government,212,334,1,68,68);
+  drawCentered(economy,47+economyPos.x,319+economyPos.y,1,68,68);
+  drawCentered(factionLower,130+factionLowerPos.x,322+factionLowerPos.y,1,68,68);
+  drawCentered(government,212+governmentPos.x,334+governmentPos.y,1,68,68);
 
   const slices=(state.country.ideologySlices||[]).filter(x=>Number(x.value)>0);
   const total=slices.reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0)||1;
-  const pieCx=441,pieCy=335,pieR=39;
+  const piePos=cleanPosition(positions.pie),pieCx=441+piePos.x,pieCy=335+piePos.y,pieR=39;
   let angle=-Math.PI/2;
   for(const slice of slices){
     const amount=Math.max(0,Number(slice.value)||0)/total;
     ctx.beginPath();ctx.moveTo(pieCx,pieCy);ctx.arc(pieCx,pieCy,pieR,angle,angle+Math.PI*2*amount);ctx.closePath();ctx.fillStyle=slice.color||'#777';ctx.fill();angle+=Math.PI*2*amount;
   }
-  if(pieOverlay)ctx.drawImage(pieOverlay,396,292,90,87);
+  if(pieOverlay)ctx.drawImage(pieOverlay,pieCx-45,pieCy-43.5,90,87);
 
   const ts=state.country.textSizes||DEFAULTS.country.textSizes;
   ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
@@ -563,7 +600,7 @@ async function renderCountry(seq){
   ctx.fillText(state.country.leader,90,245,148);
 
   ctx.font=textFont(fitText(state.country.focusText,230,Number(ts.focus)||14,8,true),true);
-  ctx.fillText(state.country.focusText,407,58,230);
+  ctx.fillText(state.country.focusText,407+focusX,58+focusY,230);
 
   ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='#e7e7e7';
   ctx.font=textFont(fitText(state.country.ideologyText,174,Number(ts.ideology)||15,8,true),true);
@@ -575,9 +612,11 @@ async function renderCountry(seq){
   else{ctx.fillStyle='#e5b025';ctx.fillText(election,188,265,175)}
 
   if(state.country.powerBalanceEnabled!==false){
+    const bopPos=cleanPosition(positions.bop),bx=bopPos.x,by=bopPos.y;
+    if(bopGlow)ctx.drawImage(bopGlow,384+bx,218+by,86,57);
     ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458,238,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458,260,72);
-    drawCentered(bop,405,248,1,48,48);
+    ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458+bx,238+by,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458+bx,260+by,72);
+    drawCentered(bop,405+bx,248+by,1,48,48);
   }
 
   ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
@@ -587,8 +626,9 @@ async function renderCountry(seq){
   const governmentLines=wrapLines(state.country.governmentText,118,ctx.font,3);
   governmentLines.forEach((line,index)=>ctx.fillText(line,314,326+index*15,118));
 
+  const partyPos=cleanPosition(positions.partyList);
   ctx.textAlign='left';ctx.textBaseline='middle';
-  const rowHeight=17,partyX=508,partyY=222,partyW=196;
+  const rowHeight=17,partyX=508+partyPos.x,partyY=222+partyPos.y,partyW=196;
   const shown=slices.slice(0,10);
   shown.forEach((slice,index)=>{
     const y=partyY+index*rowHeight;
@@ -600,11 +640,13 @@ async function renderCountry(seq){
     ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18,y,178);
   });
 
-  if(occupiedBtn)ctx.drawImage(occupiedBtn,258,358,34,33);
-  if(exileBtn)ctx.drawImage(exileBtn,294,358,34,33);
-  if(subjectsBtn)ctx.drawImage(subjectsBtn,330,358,34,33);
+  const utilityPos=cleanPosition(positions.utilityButtons);
+  if(occupiedBtn)ctx.drawImage(occupiedBtn,258+utilityPos.x,358+utilityPos.y,34,33);
+  if(exileBtn)ctx.drawImage(exileBtn,294+utilityPos.x,358+utilityPos.y,34,33);
+  if(subjectsBtn)ctx.drawImage(subjectsBtn,330+utilityPos.x,358+utilityPos.y,34,33);
   ctx.shadowColor='transparent';
 }
+
 async function renderEvent(seq){
   const bodyFont=textFont(17,false); ctx.font=bodyFont; const bodyLines=wrapLines(state.event.body,520,bodyFont,18); const bodyH=bodyLines.length*21;
   const tileCount=Math.max(2,Math.min(5,Math.ceil(Math.max(120,bodyH-30)/80)));
@@ -676,10 +718,11 @@ function addPieSlice(){
   saveState();renderPieEditor();scheduleRender();
 }
 
-function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','ideologyIcon','factionIcon','economyIcon','governmentIcon','bopIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
+function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','spirit5','spirit6','ideologyIcon','factionIcon','factionLowerIcon','economyIcon','governmentIcon','bopIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
 function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
 function activeAnimationDuration(){let duration=0;for(const key of animatedKeysForTool())if(animatedAssets.has(key))duration=Math.max(duration,animatedDurations.get(key)||1000);return Math.max(100,Math.min(15000,duration||1000))}
-function ensureAnimationLoop(){if(animationLoopId||!activeToolHasAnimation()||exportInProgress)return;const tick=now=>{animationLoopId=0;if(!activeToolHasAnimation()||exportInProgress)return;if(!document.hidden&&now-animationLastPaint>=50&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
+function activeToolNeedsLiveRender(){return activeToolHasAnimation()||(activeTool==='country'&&state.country.powerBalanceEnabled!==false)}
+function ensureAnimationLoop(){if(animationLoopId||!activeToolNeedsLiveRender()||exportInProgress)return;const tick=now=>{animationLoopId=0;if(!activeToolNeedsLiveRender()||exportInProgress)return;const interval=activeToolHasAnimation()?50:180;if(!document.hidden&&now-animationLastPaint>=interval&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
 function scheduleRender(){
   const seq=++renderSeq;
   requestAnimationFrame(()=>{
@@ -711,7 +754,8 @@ async function loadManifest(){
 function normalizeIconSrc(src){ if(src.startsWith('./'))return '../'+src.slice(2); if(src.startsWith('/'))return '..'+src; return src; }
 const ICON_PICKER_INFO={
   ideology:{title:'Choose ideology icon',category:'ideology',kind:'icon',emptyLabel:'No icon'},
-  faction:{title:'Choose alliance / faction icon',category:'factions',kind:'icon',emptyLabel:'No icon'},
+  faction:{title:'Choose top alliance emblem',category:'factions',kind:'icon',emptyLabel:'No icon'},
+  factionLower:{title:'Choose lower alliance icon',category:'factions',kind:'icon',emptyLabel:'No icon'},
   economy:{title:'Choose economy type',category:'economy',kind:'icon',emptyLabel:'No icon'},
   government:{title:'Choose government type',category:'government',kind:'icon',emptyLabel:'No icon'},
   bop:{title:'Choose balance of power icon',category:'bop',kind:'icon',emptyLabel:'No icon'},
@@ -719,7 +763,9 @@ const ICON_PICKER_INFO={
   spirit1:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
   spirit2:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
   spirit3:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
-  spirit4:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'}
+  spirit4:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
+  spirit5:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'},
+  spirit6:{title:'Choose national spirit',category:'ideas',kind:'asset',emptyLabel:'Empty'}
 };
 async function openIconPicker(mode){
   iconMode=mode;
@@ -928,7 +974,7 @@ async function exportPNG(){
 }
 async function resetTool(){
   const fresh=cloneDefaults(); state[activeTool]=fresh[activeTool];
-  const keys={country:['flag','leader','focus','spirit1','spirit2','spirit3','spirit4'],event:['event'],news:['news'],super:['super']}[activeTool]||[];
+  const keys={country:['flag','leader','focus','spirit1','spirit2','spirit3','spirit4','spirit5','spirit6'],event:['event'],news:['news'],super:['super']}[activeTool]||[];
   for(const k of keys) await clearAsset(k);
   if(activeTool==='country')for(const mode of COUNTRY_ICON_MODES)await removeStoredCustomIcon(mode);
   saveState(); bindValuesOnly(); updateThumbs(); updateOutputs(); renderPieEditor(); scheduleRender();
@@ -945,11 +991,11 @@ function init(){
   bindInputs(); updateOutputs(); updateThumbs(); renderPieEditor(); setupDisclaimer();
   $$('.tool-tab').forEach(b=>b.onclick=()=>switchTool(b.dataset.tool)); $('#mobileToolSelect').onchange=e=>switchTool(e.target.value);
   $('#leaderFile').onchange=e=>handleAssetInput('leader',e.target); $('#focusFile').onchange=e=>handleAssetInput('focus',e.target); $('#eventFile').onchange=e=>handleAssetInput('event',e.target); $('#newsFile').onchange=e=>handleAssetInput('news',e.target); $('#superFile').onchange=e=>handleAssetInput('super',e.target);
-  for(const key of ['spirit1','spirit2','spirit3','spirit4'])$('#'+key+'File').onchange=e=>handleAssetInput(key,e.target);
+  for(const key of ['spirit1','spirit2','spirit3','spirit4','spirit5','spirit6'])$('#'+key+'File').onchange=e=>handleAssetInput(key,e.target);
   $$('[data-clear-asset]').forEach(b=>b.onclick=()=>clearAsset(b.dataset.clearAsset));
   $$('[data-spirit-preset]').forEach(b=>b.onclick=()=>openIconPicker(b.dataset.spiritPreset));
   $$('[data-empty-spirit]').forEach(b=>b.onclick=()=>emptySpirit(b.dataset.emptySpirit));
-  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#chooseEconomy').onclick=()=>openIconPicker('economy'); $('#chooseGovernment').onclick=()=>openIconPicker('government'); $('#chooseBop').onclick=()=>openIconPicker('bop'); $('#chooseFocus').onclick=()=>openIconPicker('focus');
+  $('#chooseIdeology').onclick=()=>openIconPicker('ideology'); $('#chooseFaction').onclick=()=>openIconPicker('faction'); $('#chooseFactionLower').onclick=()=>openIconPicker('factionLower'); $('#chooseEconomy').onclick=()=>openIconPicker('economy'); $('#chooseGovernment').onclick=()=>openIconPicker('government'); $('#chooseBop').onclick=()=>openIconPicker('bop'); $('#chooseFocus').onclick=()=>openIconPicker('focus');
   $('#iconSearch').oninput=e=>renderIconGrid(e.target.value); $('#iconUploadInput').onchange=e=>handlePickerUpload(e.target); $('#iconNoIconBtn').onclick=()=>chooseNoIcon(iconMode); $('#addPieSlice').onclick=addPieSlice;
   $('#powerBalanceEnabled').onchange=e=>{state.country.powerBalanceEnabled=!!e.target.checked;saveState();updateThumbs();scheduleRender();};
   $('#exportBtn').onclick=exportPNG; $('#resetToolBtn').onclick=()=>{if(confirm('Reset this GFX to its defaults?')) resetTool();};
