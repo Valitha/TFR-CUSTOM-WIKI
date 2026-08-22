@@ -516,7 +516,6 @@ async function renderCountry(seq){
   setCanvas(719,394,'Country',2);
   ctx.clearRect(0,0,719,394);
   ctx.fillStyle='#000';ctx.fillRect(0,0,719,394);
-  const glowFrame=Math.floor(currentAnimationTime()/240)%3;
   const imgs=await Promise.all([
     loadImage('./assets/country/pol_view_bg_new.png'),
     loadImage('./assets/country/pol_leader_frame.png'),
@@ -531,7 +530,7 @@ async function renderCountry(seq){
     loadImage('./assets/country/icon_occupied_territories.png'),
     loadImage('./assets/country/icon_exiled_governments.png'),
     loadImage('./assets/country/icon_manage_subjects.png'),
-    loadImage(`./assets/country/bop_glow_${glowFrame}.png`),
+    loadImage('./assets/country/bop_glow_0.png'),
     loadAssetImage('leader',assetUrls.leader),
     loadAssetImage('focus',assetUrls.focus),
     loadAssetImage('ideologyIcon',countryIconSrc('ideology')),
@@ -547,7 +546,7 @@ async function renderCountry(seq){
     loadAssetImage('spirit5',assetUrls.spirit5),
     loadAssetImage('spirit6',assetUrls.spirit6)
   ]); if(seq!==renderSeq)return;
-  const [panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,bopGlow,leader,focus,ideology,factionTop,factionLower,economy,government,bop,...spirits]=imgs;
+  const [panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,bopFrame,leader,focus,ideology,factionTop,factionLower,economy,government,bop,...spirits]=imgs;
 
   if(panel)ctx.drawImage(panel,0,0,719,394);
 
@@ -613,7 +612,7 @@ async function renderCountry(seq){
 
   if(state.country.powerBalanceEnabled!==false){
     const bopPos=cleanPosition(positions.bop),bx=bopPos.x,by=bopPos.y;
-    if(bopGlow)ctx.drawImage(bopGlow,384+bx,218+by,86,57);
+    if(bopFrame)ctx.drawImage(bopFrame,384+bx,218+by,86,57);
     ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458+bx,238+by,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458+bx,260+by,72);
     drawCentered(bop,405+bx,248+by,1,48,48);
@@ -721,7 +720,7 @@ function addPieSlice(){
 function animatedKeysForTool(tool=activeTool){return({country:['leader','focus','spirit1','spirit2','spirit3','spirit4','spirit5','spirit6','ideologyIcon','factionIcon','factionLowerIcon','economyIcon','governmentIcon','bopIcon'],event:['event'],news:['news'],super:['super']}[tool]||[])}
 function activeToolHasAnimation(){return animatedKeysForTool().some(k=>animatedAssets.has(k))}
 function activeAnimationDuration(){let duration=0;for(const key of animatedKeysForTool())if(animatedAssets.has(key))duration=Math.max(duration,animatedDurations.get(key)||1000);return Math.max(100,Math.min(15000,duration||1000))}
-function activeToolNeedsLiveRender(){return activeToolHasAnimation()||(activeTool==='country'&&state.country.powerBalanceEnabled!==false)}
+function activeToolNeedsLiveRender(){return activeToolHasAnimation()}
 function ensureAnimationLoop(){if(animationLoopId||!activeToolNeedsLiveRender()||exportInProgress)return;const tick=now=>{animationLoopId=0;if(!activeToolNeedsLiveRender()||exportInProgress)return;const interval=activeToolHasAnimation()?50:180;if(!document.hidden&&now-animationLastPaint>=interval&&!animationRenderBusy){animationLastPaint=now;animationRenderBusy=true;const seq=++renderSeq,fn={country:renderCountry,event:renderEvent,news:renderNews,super:renderSuper}[activeTool];Promise.resolve(fn?.(seq)).catch(console.error).finally(()=>{animationRenderBusy=false})}animationLoopId=requestAnimationFrame(tick)};animationLoopId=requestAnimationFrame(tick)}
 function scheduleRender(){
   const seq=++renderSeq;
