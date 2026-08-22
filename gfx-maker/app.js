@@ -497,6 +497,7 @@ async function renderCountry(seq){
     loadImage('./assets/country/pol_view_bg_new.png'),
     loadImage('./assets/country/pol_leader_frame.png'),
     loadImage('./assets/country/pol_goal_bg.png'),
+    loadImage('./assets/country/add_national_goal_button.png'),
     loadImage('./assets/country/pol_goal_progress_bg.png'),
     loadImage('./assets/country/pol_goal_progress_frame.png'),
     loadImage('./assets/country/pol_goal_progress.png'),
@@ -506,7 +507,6 @@ async function renderCountry(seq){
     loadImage('./assets/country/icon_occupied_territories.png'),
     loadImage('./assets/country/icon_exiled_governments.png'),
     loadImage('./assets/country/icon_manage_subjects.png'),
-    loadImage(template('closebutton_small.png')),
     loadAssetImage('leader',assetUrls.leader),
     loadAssetImage('focus',assetUrls.focus),
     loadAssetImage('ideologyIcon',countryIconSrc('ideology')),
@@ -519,7 +519,7 @@ async function renderCountry(seq){
     loadAssetImage('spirit3',assetUrls.spirit3),
     loadAssetImage('spirit4',assetUrls.spirit4)
   ]); if(seq!==renderSeq)return;
-  const [panel,leaderFrame,goalBg,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,closeBtn,leader,focus,ideology,faction,economy,government,bop,...spirits]=imgs;
+  const [panel,leaderFrame,goalBg,goalButton,progressBg,progressFrame,progress,pieOverlay,partyRow,partyColour,occupiedBtn,exileBtn,subjectsBtn,leader,focus,ideology,faction,economy,government,bop,...spirits]=imgs;
 
   if(panel)ctx.drawImage(panel,0,0,719,394);
 
@@ -527,7 +527,7 @@ async function renderCountry(seq){
   if(leaderFrame)ctx.drawImage(leaderFrame,4,9,172,258);
 
   if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
-  if(closeBtn)ctx.drawImage(closeBtn,519,14,26,26);
+  if(goalButton)ctx.drawImage(goalButton,278,24,258,83);
   if(progressBg)ctx.drawImage(progressBg,292,92,237,6);
   if(progress){
     const amount=Math.max(0,Math.min(100,Number(state.country.focusProgress)||0))/100;
@@ -548,7 +548,7 @@ async function renderCountry(seq){
 
   const slices=(state.country.ideologySlices||[]).filter(x=>Number(x.value)>0);
   const total=slices.reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0)||1;
-  const pieCx=441,pieCy=335,pieR=31.5;
+  const pieCx=441,pieCy=335,pieR=39;
   let angle=-Math.PI/2;
   for(const slice of slices){
     const amount=Math.max(0,Number(slice.value)||0)/total;
