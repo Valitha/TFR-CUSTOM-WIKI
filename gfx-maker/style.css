@@ -52,7 +52,7 @@ input[type="text"],input[type="number"],textarea,input[type="search"]{cursor:tex
 .advanced-body{padding:8px 10px 10px;display:grid;gap:10px}
 .advanced-subtitle{font-size:11px;color:#bca9c2;text-transform:uppercase;letter-spacing:.08em}
 .transform-stack,.position-stack{display:grid;gap:8px}
-.position-stack{grid-template-columns:repeat(2,minmax(0,1fr))}
+.position-stack{grid-template-columns:1fr}
 .transform-group,.position-group{border:1px solid #302334;background:#0b070d;padding:7px;display:grid;gap:5px}
 .transform-group>b,.position-group>b{font-size:12px;font-weight:400;color:#fff;margin-bottom:2px}
 .transform-group label,.position-group label,.text-size-list label{display:grid!important;grid-template-columns:76px minmax(0,1fr) 46px;align-items:center;gap:8px;margin:0!important;padding:3px 0;color:#d7cad9;font-size:11px}
