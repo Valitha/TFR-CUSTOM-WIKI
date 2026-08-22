@@ -43,7 +43,18 @@ const DEFAULTS = {
       election: 14,
       economy: 12,
       government: 12,
-      focus: 14
+      focus: 14,
+      bop: 13
+    },
+    textPositions: {
+      leader: { x: 0, y: 0 },
+      ideology: { x: 0, y: 0 },
+      election: { x: 0, y: 0 },
+      economy: { x: 0, y: 0 },
+      government: { x: 0, y: 0 },
+      focus: { x: 0, y: 0 },
+      bop: { x: 0, y: 0 },
+      partyList: { x: 0, y: 0 }
     },
     transforms: {
       flag: { x: 0, y: 0, size: 100 },
@@ -569,6 +580,8 @@ async function renderCountry(seq){
 
   const positions=state.country.positions||DEFAULTS.country.positions;
   const ts=state.country.textSizes||DEFAULTS.country.textSizes;
+  const textPositions=state.country.textPositions||DEFAULTS.country.textPositions;
+  const textOffset=key=>({x:Number(textPositions[key]?.x)||0,y:Number(textPositions[key]?.y)||0});
 
   withPlacement(positions.focusPanel,364.5,65.5,()=>{
     if(goalBg)ctx.drawImage(goalBg,185,12,359,107);
@@ -583,8 +596,9 @@ async function renderCountry(seq){
     drawCenteredTransform(focus,236,65,1,76,76,state.country.transforms?.focus);
     ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
     ctx.fillStyle='#e7e7e7';ctx.textAlign='center';ctx.textBaseline='middle';
+    const focusTextPos=textOffset('focus');
     ctx.font=textFont(fitText(state.country.focusText,230,Number(ts.focus)||14,8,true),true);
-    ctx.fillText(state.country.focusText,407,58,230);
+    ctx.fillText(state.country.focusText,407+focusTextPos.x,58+focusTextPos.y,230);
     ctx.shadowColor='transparent';
   });
 
@@ -613,23 +627,30 @@ async function renderCountry(seq){
 
   ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.shadowOffsetX=1;ctx.shadowOffsetY=1;
   ctx.fillStyle='#e7e7e7';ctx.textAlign='center';ctx.textBaseline='middle';
+  const leaderTextPos=textOffset('leader');
   ctx.font=textFont(fitText(state.country.leader,148,Number(ts.leader)||15,8,true),true);
-  ctx.fillText(state.country.leader,90,245,148);
+  ctx.fillText(state.country.leader,90+leaderTextPos.x,245+leaderTextPos.y,148);
 
   ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='#e7e7e7';
+  const ideologyTextPos=textOffset('ideology');
   ctx.font=textFont(fitText(state.country.ideologyText,174,Number(ts.ideology)||15,8,true),true);
-  ctx.fillText(state.country.ideologyText,188,230,174);
+  ctx.fillText(state.country.ideologyText,188+ideologyTextPos.x,230+ideologyTextPos.y,174);
   const election=String(state.country.election||'');
   const split=election.match(/^([^:]+:)(.*)$/);
+  const electionTextPos=textOffset('election');
+  const electionX=188+electionTextPos.x,electionY=265+electionTextPos.y;
   ctx.font=textFont(Number(ts.election)||12,true);
-  if(split){ctx.fillStyle='#d8d8d8';ctx.fillText(split[1],188,265,175);const labelW=ctx.measureText(split[1]+' ').width;ctx.fillStyle='#e5b025';ctx.fillText(split[2].trim(),188+labelW,265,175-labelW)}
-  else{ctx.fillStyle='#e5b025';ctx.fillText(election,188,265,175)}
+  if(split){ctx.fillStyle='#d8d8d8';ctx.fillText(split[1],electionX,electionY,175);const labelW=ctx.measureText(split[1]+' ').width;ctx.fillStyle='#e5b025';ctx.fillText(split[2].trim(),electionX+labelW,electionY,175-labelW)}
+  else{ctx.fillStyle='#e5b025';ctx.fillText(election,electionX,electionY,175)}
 
   if(state.country.powerBalanceEnabled!==false){
     withPlacement(positions.bop,427,247,()=>{
       if(bopFrame)ctx.drawImage(bopFrame,384,218,86,57);
       ctx.fillStyle='#f0f0f0';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.font=textFont(13,true);ctx.fillText(String(state.country.powerBalancePercent||''),458,238,72);ctx.fillText(String(state.country.powerBalanceLevels||''),458,260,72);
+      const bopTextPos=textOffset('bop');
+      ctx.font=textFont(Number(ts.bop)||13,true);
+      ctx.fillText(String(state.country.powerBalancePercent||''),458+bopTextPos.x,238+bopTextPos.y,72);
+      ctx.fillText(String(state.country.powerBalanceLevels||''),458+bopTextPos.x,260+bopTextPos.y,72);
       drawCentered(bop,405,248,1,48,48);
     });
   }
@@ -637,16 +658,18 @@ async function renderCountry(seq){
   ctx.save();
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='#e5b025';
+  const economyTextPos=textOffset('economy');
   ctx.font=textFont(fitText(state.country.economyText,154,Number(ts.economy)||12,8,true),true);
-  ctx.fillText(state.country.economyText,90,372,154);
+  ctx.fillText(state.country.economyText,90+economyTextPos.x,372+economyTextPos.y,154);
 
+  const governmentTextPos=textOffset('government');
   const governmentSize=Number(ts.government)||12;
   const governmentFont=textFont(governmentSize,true);
   const governmentLines=wrapLines(state.country.governmentText,118,governmentFont,3);
   const governmentLineHeight=Math.max(12,Math.round(governmentSize*1.25));
-  const governmentStartY=334-((governmentLines.length-1)*governmentLineHeight)/2;
+  const governmentStartY=334+governmentTextPos.y-((governmentLines.length-1)*governmentLineHeight)/2;
   ctx.font=governmentFont;ctx.fillStyle='#e7e7e7';
-  governmentLines.forEach((line,index)=>ctx.fillText(line,314,governmentStartY+index*governmentLineHeight,118));
+  governmentLines.forEach((line,index)=>ctx.fillText(line,314+governmentTextPos.x,governmentStartY+index*governmentLineHeight,118));
   ctx.restore();
 
   withPlacement(positions.partyList,606,300,()=>{
@@ -659,8 +682,8 @@ async function renderCountry(seq){
       if(partyColour)ctx.drawImage(partyColour,partyX,y-7,14,14);
       ctx.fillStyle=slice.color||'#777';ctx.fillRect(partyX+3,y-4,8,8);
       ctx.fillStyle='#e8e8e8';ctx.font=textFont(Number(ts.party)||11,true);
-      const amount=Math.max(0,Number(slice.value)||0);
-      ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18,y,178);
+      const amount=Math.max(0,Number(slice.value)||0),partyTextPos=textOffset('partyList');
+      ctx.fillText(`${slice.label||`Party ${index+1}`} (${amount})`,partyX+18+partyTextPos.x,y+partyTextPos.y,178);
     });
   });
 
