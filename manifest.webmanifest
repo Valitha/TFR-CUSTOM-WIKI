@@ -2,7 +2,7 @@
   "id": "./",
   "name": "The Fire Rises Wiki Editor",
   "short_name": "TFR Wiki",
-  "description": "A local TFR-style lore wiki editor and fan GFX maker.",
+  "description": "A local-first lore wiki editor with TFR and Wikipedia-style reader modes, plus the TFR fan GFX maker.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tfr-wiki-shell-1.0.22';
+const CACHE_NAME = 'tfr-wiki-shell-1.1.0';
 const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const CORE = [
   HTML2CANVAS_URL,
@@ -7,6 +7,7 @@ const CORE = [
   './manifest.webmanifest',
   './css/editor.css',
   './css/tfr-theme.css',
+  './css/wikipedia-theme.css',
   './js/app.bundle.js',
   './js/mobile-gestures.js',
   './js/app.js',
@@ -15,6 +16,7 @@ const CORE = [
   './js/sanitize.js',
   './js/pwa.js',
   './assets/tfr-logo.gif',
+  './assets/wikipedia-w.svg',
   './assets/Cursor1.png',
   './assets/Pointer1.png',
   './assets/click_close.wav',

@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <link href="https://fonts.cdnfonts.com/css/vcr-osd-mono" rel="stylesheet">
-  <link rel="stylesheet" href="./css/editor.css">
+  <link rel="stylesheet" href="./css/editor.css?v=1.1.0">
 </head>
 <body>
   <div id="pwaSplash" class="pwa-splash" hidden aria-hidden="true"><img src="./assets/tfr-logo.gif" alt=""></div>
@@ -65,6 +65,13 @@
       </label>
       <div id="pageList" class="page-list"></div>
       <button id="addPageBtn" class="ui-btn full" type="button">+ New page</button>
+      <div class="mobile-wiki-style">
+        <span>Wiki mode</span>
+        <div class="wiki-style-switch" role="group" aria-label="Wiki style">
+          <button class="wiki-style-btn active" data-wiki-style="tfr" type="button" aria-pressed="true">TFR Wiki</button>
+          <button class="wiki-style-btn" data-wiki-style="wikipedia" type="button" aria-pressed="false">Wikipedia</button>
+        </div>
+      </div>
       <div class="mobile-sidebar-actions">
         <button id="mobileNewProjectBtn" class="ui-btn" type="button">New project</button>
         <button id="mobileImportBtn" class="ui-btn" type="button">Import</button>
@@ -97,6 +104,11 @@
         <button id="desktopPageMenuBtn" class="workspace-tab pages-tab" type="button" aria-label="Pages and project menu" aria-expanded="false">Pages</button>
         <button class="workspace-tab active" data-mode="edit" type="button">Edit</button>
         <button class="workspace-tab" data-mode="preview" type="button">Preview</button>
+        <div class="wiki-style-switch desktop-wiki-style-switch" role="group" aria-label="Wiki style">
+          <span class="wiki-style-switch-label">Mode</span>
+          <button class="wiki-style-btn active" data-wiki-style="tfr" type="button" aria-pressed="true">TFR Wiki</button>
+          <button class="wiki-style-btn" data-wiki-style="wikipedia" type="button" aria-pressed="false">Wikipedia</button>
+        </div>
         <a class="workspace-tab gfx-maker-link" href="./gfx-maker/">GFX Maker</a>
       </nav>
 
@@ -327,8 +339,8 @@
     }
   })();
   </script>
-  <script src="./js/app.bundle.js"></script>
-  <script src="./js/mobile-gestures.js"></script>
-  <script src="./js/pwa.js"></script>
+  <script src="./js/app.bundle.js?v=1.1.0"></script>
+  <script src="./js/mobile-gestures.js?v=1.1.0"></script>
+  <script src="./js/pwa.js?v=1.1.0"></script>
 </body>
 </html>
