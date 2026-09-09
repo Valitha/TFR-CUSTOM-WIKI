@@ -1429,3 +1429,71 @@ body.wiki-mode-wikipedia [data-command="purple"]{display:none!important}
   body.wiki-mode-wikipedia.mobile-gesture-to-preview #previewFrame{background:#fff!important}
   body.wiki-mode-wikipedia.mobile-gesture-from-preview #editorPane{background:#f8f9fa!important}
 }
+
+
+/* Mobile mode-switch scroll fix (1.1.1)
+   Preview is a fixed viewport with ONE scroll surface: the iframe itself.
+   The editor page keeps its own scroll position underneath, so repeatedly
+   entering/leaving Preview cannot leave iOS Safari/PWA body scrolling locked. */
+@media(max-width:760px){
+  body.mobile-preview-active{
+    overflow:hidden!important;
+    overflow-x:hidden!important;
+    overflow-y:hidden!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    overscroll-behavior:none!important;
+  }
+  body.mobile-preview-active .preview-pane{
+    display:block!important;
+    position:fixed!important;
+    inset:0!important;
+    z-index:3100!important;
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:100dvh!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  body.mobile-preview-active .preview-wrap,
+  body.mobile-preview-active .preview-wrap.phone{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+  body.mobile-preview-active .preview-wrap iframe{
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    border:0!important;
+    border-radius:0!important;
+    overflow:auto!important;
+    touch-action:pan-y pinch-zoom!important;
+  }
+  body:not(.mobile-preview-active):not(.mobile-pages-open):not(.mobile-pages-gesture):not(.mobile-mode-gesture){
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    height:auto!important;
+  }
+  html.pwa-standalone body.mobile-preview-active .preview-pane{
+    padding-top:env(safe-area-inset-top)!important;
+    padding-left:env(safe-area-inset-left)!important;
+    padding-right:env(safe-area-inset-right)!important;
+    padding-bottom:env(safe-area-inset-bottom)!important;
+    height:100dvh!important;
+  }
+  html.pwa-standalone body.mobile-preview-active .preview-wrap,
+  html.pwa-standalone body.mobile-preview-active .preview-wrap.phone,
+  html.pwa-standalone body.mobile-preview-active .preview-wrap iframe{
+    height:100%!important;
+    min-height:0!important;
+  }
+}

@@ -370,6 +370,21 @@
     },{passive:true});
   }
 
+  function hardResetGestureUi(){
+    gesture=null;
+    flushVisual();
+    drawerStyles(false);
+    modeLayerStyles('to-preview',false);
+    body.classList.remove('mobile-pages-gesture','mobile-mode-gesture','mobile-gesture-to-preview','mobile-gesture-from-preview');
+  }
+
+  // The main app calls this before committing a mode change. It is also useful
+  // after iOS interrupts a touch sequence (app switch, orientation change, etc.).
+  window.__resetMobileGestureUi=hardResetGestureUi;
+  window.addEventListener('pageshow',hardResetGestureUi);
+  window.addEventListener('orientationchange',()=>setTimeout(hardResetGestureUi,80));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)hardResetGestureUi()});
+
   previewFrame?.addEventListener('load',wirePreview);
   if(previewFrame?.contentDocument?.readyState==='complete') wirePreview();
 })();
