@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tfr-wiki-shell-1.1.0';
+const CACHE_NAME = 'tfr-wiki-shell-v40';
 const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 const CORE = [
   HTML2CANVAS_URL,
@@ -7,7 +7,6 @@ const CORE = [
   './manifest.webmanifest',
   './css/editor.css',
   './css/tfr-theme.css',
-  './css/wikipedia-theme.css',
   './js/app.bundle.js',
   './js/mobile-gestures.js',
   './js/app.js',
@@ -16,7 +15,6 @@ const CORE = [
   './js/sanitize.js',
   './js/pwa.js',
   './assets/tfr-logo.gif',
-  './assets/wikipedia-w.svg',
   './assets/Cursor1.png',
   './assets/Pointer1.png',
   './assets/click_close.wav',
@@ -38,81 +36,6 @@ const CORE = [
   './gfx-maker/assets/placeholders/major_news.png',
   './gfx-maker/assets/placeholders/local_news.png',
   './gfx-maker/assets/placeholders/super_event.png',
-  './gfx-maker/assets/icon-library/catalog.json',
-  './gfx-maker/assets/icon-library/economy/USC_managed_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_america_first_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_american_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_ancap.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_bilderberg_system.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_capitalist_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_chaostic_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_collective_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_command_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_corporatism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_developed_socialism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_inclusive_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_kaiser_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_left_corporatism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_liberal_corporatism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_maga_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_military_controlled_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_minarchism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_mixed_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_oligopolistic_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_party_state_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_planned_economy.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_socialist_market.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_state_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_welfare_capitalism.png',
-  './gfx-maker/assets/icon-library/economy/ZZZ_worker_controlled_economy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_absolute_monarchy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_ai_governance.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_american_peoples_dictatorship.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_american_presidential_republic.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_annihilation_cult.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_chinese_political_system.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_communist_party_state.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_constitutional_monarchy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_corporate_council.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_counterintelligence_state.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_counterintelligence_state_SOV.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_crime_syndicate.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_deliberative_democracy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_directorial_system.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_eurasianist_system.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_fascist_dictatorship.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_islamic_republic.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_military_dictatorship.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_nazi_dictatorship.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_neo_soviet_republic.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_parliamentary_republic.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_peoples_democracy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_personalistic_dictatorship.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_presidential_dictatorship.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_presidential_republic.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_provisional_government.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_revolutionary_front.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_russian_political_system.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_semi_constitutional_monarchy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_semi_presidential_system.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_socialist_republic.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_taiwanese_semi_presidential_system.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_theocracy.png',
-  './gfx-maker/assets/icon-library/government/ZZZ_ultranationalist_dictatorship.png',
-  './gfx-maker/assets/country/pol_view_bg_new.png',
-  './gfx-maker/assets/country/pol_leader_frame.png',
-  './gfx-maker/assets/country/pol_goal_bg.png',
-  './gfx-maker/assets/country/add_national_goal_button.png',
-  './gfx-maker/assets/country/bop_glow_0.png',
-  './gfx-maker/assets/country/pol_goal_progress.png',
-  './gfx-maker/assets/country/pol_goal_progress_bg.png',
-  './gfx-maker/assets/country/pol_goal_progress_frame.png',
-  './gfx-maker/assets/country/pol_piechart_overlay_63x63.png',
-  './gfx-maker/assets/country/leading_pol_party_bg.png',
-  './gfx-maker/assets/country/pol_party_colour_bg.png',
-  './gfx-maker/assets/country/icon_occupied_territories.png',
-  './gfx-maker/assets/country/icon_exiled_governments.png',
-  './gfx-maker/assets/country/icon_manage_subjects.png',
   './gfx-maker/assets/template/diplo_upper_win_bg.png',
   './gfx-maker/assets/template/diplo_top_bg_diplo_tab.png',
   './gfx-maker/assets/template/diplo_leader_frame.png',
@@ -164,7 +87,7 @@ const CORE = [
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Skip missing optional files so one bad asset does not block the PWA install.
+    // One missing optional file should not prevent the whole PWA from installing.
     await Promise.all(CORE.map(url => cache.add(url).catch(() => null)));
   })());
 });
@@ -210,7 +133,8 @@ self.addEventListener('fetch', event => {
   }
   if (url.origin !== self.location.origin) return;
 
-  // Let the browser handle partial audio requests. This keeps iPhone music requests from getting stuck in the app cache.
+  // Let the browser handle byte-range audio requests normally. The editor itself
+  // remains available offline even if iOS chooses a range request for the music.
   if (request.headers.has('range')) return;
 
   const appShell = request.mode === 'navigate' || /\.(?:html?|js|css|webmanifest|json)$/i.test(url.pathname);
